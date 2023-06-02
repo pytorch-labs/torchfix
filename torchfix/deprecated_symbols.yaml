@@ -1,0 +1,55 @@
+- name: torch.qr
+  deprecate_pr: https://github.com/pytorch/pytorch/pull/57745
+  remove_pr:
+
+- name: torch.symeig
+  deprecate_pr: https://github.com/pytorch/pytorch/pull/57732
+  remove_pr: https://github.com/pytorch/pytorch/pull/70988
+
+- name: torch.chain_matmul
+  deprecate_pr: https://github.com/pytorch/pytorch/pull/57735
+  remove_pr:
+
+- name: torch.cholesky
+  deprecate_pr: https://github.com/pytorch/pytorch/pull/57725
+  remove_pr:
+
+- name: torch.ger
+  deprecate_pr: TBA
+  remove_pr:
+
+- name: torch.lu_solve
+  deprecate_pr: TBA
+  remove_pr:
+
+- name: torch.norm
+  deprecate_pr: TBA
+  remove_pr:
+
+- name: torch.range
+  deprecate_pr: TBA
+  remove_pr:
+
+- name: torch.svd
+  deprecate_pr: TBA
+  remove_pr:
+
+- name: torch.triangular_solve
+  deprecate_pr: TBA
+  remove_pr:
+
+- name: torch.lu
+  deprecate_pr: TBA
+  remove_pr:
+
+- name: torch.nn.UpsamplingNearest2d
+  deprecate_pr: TBA
+  remove_pr:
+
+- name: torch.nn.UpsamplingBilinear2d
+  deprecate_pr: TBA
+  remove_pr:
+
+- name: torch.testing.assert_allclose
+  deprecate_pr: TBA
+  remove_pr:
