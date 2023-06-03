@@ -65,7 +65,7 @@ class TorchVisitor(cst.CSTVisitor):
                 error_code = "TOR101"
                 message = f"Use of deprecated function {qualified_name}"
             else:
-                error_code = "TOR201"
+                error_code = "TOR001"
                 message = f"Use of removed function {qualified_name}"
 
             replacement = None
