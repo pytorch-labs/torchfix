@@ -39,6 +39,20 @@ class LintViolation:
         return f"{position} {error_code}{fixable} {self.message}"
 
 
+class _MultiChildReplacementTransformer(cst.CSTTransformer):
+    def __init__(self, replacement_map) -> None:
+        self.replacement_map = replacement_map
+
+    def on_leave(self, original_node, updated_node):
+        if id(original_node) in self.replacement_map:
+            return self.replacement_map[id(original_node)]
+        return updated_node
+
+
+def deep_multi_replace(tree, replacement_map):
+    return tree.visit(_MultiChildReplacementTransformer(replacement_map))
+
+
 class TorchVisitor(cst.CSTVisitor):
     METADATA_DEPENDENCIES = (
         cst.metadata.QualifiedNameProvider,
@@ -128,14 +142,12 @@ class TorchCodemod(codemod.Codemod):
         # instead of `module`.
         wrapped_module = cst.MetadataWrapper(module, unsafe_skip_copy=True)
         wrapped_module.visit(visitor)
-        new_module = module
 
         violations = visitor.violations
+        replacement_map = {}
         for violation in violations:
             if violation.replacement is not None:
-                new_module = new_module.deep_replace(
-                    violation.node, violation.replacement
-                )
+                replacement_map[id(violation.node)] = violation.replacement
                 fixes_count += 1
             try:
                 path = Path(self.context.filename).relative_to(Path.cwd())
@@ -145,6 +157,8 @@ class TorchCodemod(codemod.Codemod):
             print(f"{path}{violation.codemod_result()}")
         if fixes_count == 0:
             raise codemod.SkipFile("No changes")
+
+        new_module = deep_multi_replace(module, replacement_map)
         return new_module
 
 
