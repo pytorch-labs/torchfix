@@ -17,6 +17,7 @@
 - name: torch.ger
   deprecate_pr: TBA
   remove_pr:
+  replacement: torch.outer
 
 - name: torch.lu_solve
   deprecate_pr: TBA
@@ -53,3 +54,44 @@
 - name: torch.testing.assert_allclose
   deprecate_pr: TBA
   remove_pr:
+
+# functorch
+- name: functorch.vmap
+  deprecate_pr: TBA
+  remove_pr:
+  replacement: torch.func.vmap
+
+- name: functorch.grad
+  deprecate_pr: TBA
+  remove_pr:
+  replacement: torch.func.grad
+
+- name: functorch.vjp
+  deprecate_pr: TBA
+  remove_pr:
+  replacement: torch.func.vjp
+
+- name: functorch.jvp
+  deprecate_pr: TBA
+  remove_pr:
+  replacement: torch.func.jvp
+
+- name: functorch.jacrev
+  deprecate_pr: TBA
+  remove_pr:
+  replacement: torch.func.jacrev
+
+- name: functorch.jacfwd
+  deprecate_pr: TBA
+  remove_pr:
+  replacement: torch.func.jacfwd
+
+- name: functorch.hessian
+  deprecate_pr: TBA
+  remove_pr:
+  replacement: torch.func.hessian
+
+- name: functorch.functionalize
+  deprecate_pr: TBA
+  remove_pr:
+  replacement: torch.func.functionalize

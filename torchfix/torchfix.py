@@ -61,6 +61,43 @@ class TorchVisitor(cst.CSTVisitor):
     )
 
     def _call_replacement(self, node: cst.Call, qualified_name) -> cst.Call:
+        def call_with_name_changes(
+            node: cst.Call, old_qualified_name: str, new_qualified_name: str
+        ) -> cst.Call:
+            old_begin, _, old_last = old_qualified_name.rpartition(".")
+            new_begin, _, new_last = new_qualified_name.rpartition(".")
+
+            # Guard against situations like `vmap(a)(b)`:
+            #
+            # Call(
+            #   func=Call(
+            #       func=Name(
+            #         value='vmap',
+            #
+            # The QualifiedName metadata for the outer call will be the same
+            # as for the inner call.
+            if isinstance(node.func, cst.Call):
+                return None
+
+            # If the only difference is the last name part.
+            if old_begin == new_begin:
+                replacement = node.with_deep_changes(
+                    old_node=node.func.attr,
+                    value=new_last,
+                )
+
+            # If the the last name part is the same and
+            # originally called without a dot: don't change the call site,
+            # just change the imports elsewhere.
+            elif old_last == new_last and isinstance(node.func, cst.Name):
+                replacement = None
+
+            # Replace with new_qualified_name.
+            else:
+                replacement = node.with_changes(
+                    func=cst.parse_expression(new_qualified_name)
+                )
+            return replacement
 
         # `torch.range` documented signature is not a valid Python signature,
         # so it's hard to generalize this.
@@ -90,8 +127,15 @@ class TorchVisitor(cst.CSTVisitor):
             return end_arg, step_arg
 
         replacement = None
-        if qualified_name == "torch.ger":
-            replacement = node.with_deep_changes(old_node=node.func.attr, value="outer")
+
+        # Replace names for functions that have drop-in replacement.
+        function_name_replacement = self.deprecated_config.get(qualified_name, {}).get(
+            "replacement", ""
+        )
+        if function_name_replacement:
+            replacement = call_with_name_changes(
+                node, qualified_name, function_name_replacement
+            )
 
         # Replace `range` with `arange`.
         # Add `step` to the `end` argument as `arange` has the interval `[start, end)`.
@@ -207,7 +251,6 @@ class TorchVisitor(cst.CSTVisitor):
             else:
                 error_code = "TOR001"
                 message = f"Use of removed function {qualified_name}"
-
             replacement = self._call_replacement(node, qualified_name)
 
             self.violations.append(
@@ -220,6 +263,34 @@ class TorchVisitor(cst.CSTVisitor):
                     replacement=replacement,
                 )
             )
+
+
+# TODO: refactor/generalize this.
+class _UpdateFunctorchImports(cst.CSTTransformer):
+    REPLACEMENTS = {
+        "vmap",
+        "grad",
+        "vjp",
+        "jvp",
+        "jacrev",
+        "jacfwd",
+        "hessian",
+        "functionalize",
+    }
+
+    def __init__(self):
+        self.changed = False
+
+    def leave_ImportFrom(
+        self, node: cst.ImportFrom, updated_node: cst.ImportFrom
+    ) -> cst.ImportFrom:
+        if node.module.value == "functorch":
+            if all([name.name.value in self.REPLACEMENTS for name in node.names]):
+                self.changed = True
+                return updated_node.with_changes(
+                    module=cst.parse_expression("torch.func")
+                )
+        return updated_node
 
 
 def _read_deprecated_config(path=None):
@@ -277,10 +348,15 @@ class TorchCodemod(codemod.Codemod):
                 # Not a subpath of a current dir, use absolute path
                 path = self.context.filename
             print(f"{path}{violation.codemod_result()}")
-        if fixes_count == 0:
-            raise codemod.SkipFile("No changes")
 
         new_module = deep_multi_replace(module, replacement_map)
+
+        update_imports_visitor = _UpdateFunctorchImports()
+        new_module = new_module.visit(update_imports_visitor)
+
+        if fixes_count == 0 and not update_imports_visitor.changed:
+            raise codemod.SkipFile("No changes")
+
         return new_module
 
 
@@ -304,6 +380,13 @@ def main() -> None:
         type=int,
         default=None,
     )
+    # XXX TODO: Get rid of this!
+    # Silence "Failed to determine module name"
+    # https://github.com/Instagram/LibCST/issues/944
+    parser.add_argument(
+        "--ignore-stderr",
+        action="store_true",
+    )
 
     args = parser.parse_args()
 
@@ -311,10 +394,11 @@ def main() -> None:
     command_instance = TorchCodemod(codemod.CodemodContext())
     DIFF_CONTEXT = 5
     try:
-        # XXX TODO: Get rid of this!
-        # Silence "Failed to determine module name"
-        # https://github.com/Instagram/LibCST/issues/944
-        with contextlib.redirect_stderr(io.StringIO()):
+        if args.ignore_stderr:
+            context = contextlib.redirect_stderr(io.StringIO())
+        else:
+            context = contextlib.nullcontext()
+        with context:
             result = codemod.parallel_exec_transform_with_prettyprint(
                 command_instance,
                 files,
