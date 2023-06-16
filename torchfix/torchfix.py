@@ -67,18 +67,6 @@ class TorchVisitor(cst.CSTVisitor):
             old_begin, _, old_last = old_qualified_name.rpartition(".")
             new_begin, _, new_last = new_qualified_name.rpartition(".")
 
-            # Guard against situations like `vmap(a)(b)`:
-            #
-            # Call(
-            #   func=Call(
-            #       func=Name(
-            #         value='vmap',
-            #
-            # The QualifiedName metadata for the outer call will be the same
-            # as for the inner call.
-            if isinstance(node.func, cst.Call):
-                return None
-
             # If the only difference is the last name part.
             if old_begin == new_begin:
                 replacement = node.with_deep_changes(
@@ -234,6 +222,18 @@ class TorchVisitor(cst.CSTVisitor):
         self.violations: List[LintViolation] = []
 
     def visit_Call(self, node):
+        # Guard against situations like `vmap(a)(b)`:
+        #
+        # Call(
+        #   func=Call(
+        #       func=Name(
+        #         value='vmap',
+        #
+        # The QualifiedName metadata for the outer call will be the same
+        # as for the inner call.
+        if isinstance(node.func, cst.Call):
+            return
+
         name_metadata = list(
             self.get_metadata(cst.metadata.QualifiedNameProvider, node)
         )
