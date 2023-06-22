@@ -3,55 +3,11 @@ import yaml
 import libcst as cst
 import libcst.codemod as codemod
 import libcst.matchers as m
-from dataclasses import dataclass
 from typing import Optional, List, Tuple
-import argparse
-import contextlib
-import io
-import sys
 
-__version__ = "0.0.1"
+from .common import LintViolation, deep_multi_replace
 
-IS_TTY = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
-CYAN = "\033[96m" if IS_TTY else ""
-RED = "\033[31m" if IS_TTY else ""
-BOLD = "\033[1m" if IS_TTY else ""
-ENDC = "\033[0m" if IS_TTY else ""
-
-
-@dataclass
-class LintViolation:
-    error_code: str
-    message: str
-    line: int
-    column: int
-    node: cst.CSTNode
-    replacement: Optional[cst.CSTNode]
-
-    def flake8_result(self):
-        full_message = f"{self.error_code} {self.message}"
-        return (self.line, 1 + self.column, full_message, "TorchFix")
-
-    def codemod_result(self) -> str:
-        fixable = f" [{CYAN}*{ENDC}]" if self.replacement is not None else ""
-        colon = f"{CYAN}:{ENDC}"
-        position = f"{colon}{self.line}{colon}{1 + self.column}{colon}"
-        error_code = f"{RED}{BOLD}{self.error_code}{ENDC}"
-        return f"{position} {error_code}{fixable} {self.message}"
-
-
-class _MultiChildReplacementTransformer(cst.CSTTransformer):
-    def __init__(self, replacement_map) -> None:
-        self.replacement_map = replacement_map
-
-    def on_leave(self, original_node, updated_node):
-        if id(original_node) in self.replacement_map:
-            return self.replacement_map[id(original_node)]
-        return updated_node
-
-
-def deep_multi_replace(tree, replacement_map):
-    return tree.visit(_MultiChildReplacementTransformer(replacement_map))
+__version__ = "0.0.2"
 
 
 class TorchVisitor(cst.CSTVisitor):
@@ -284,12 +240,11 @@ class _UpdateFunctorchImports(cst.CSTTransformer):
     def leave_ImportFrom(
         self, node: cst.ImportFrom, updated_node: cst.ImportFrom
     ) -> cst.ImportFrom:
-        if node.module.value == "functorch":
-            if all([name.name.value in self.REPLACEMENTS for name in node.names]):
-                self.changed = True
-                return updated_node.with_changes(
-                    module=cst.parse_expression("torch.func")
-                )
+        if node.module.value == "functorch" and all(
+            name.name.value in self.REPLACEMENTS for name in node.names
+        ):
+            self.changed = True
+            return updated_node.with_changes(module=cst.parse_expression("torch.func"))
         return updated_node
 
 
@@ -358,80 +313,3 @@ class TorchCodemod(codemod.Codemod):
             raise codemod.SkipFile("No changes")
 
         return new_module
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "path",
-        nargs="+",
-        help=("Path to check/fix. Can be a directory, a file, or multiple of either."),
-    )
-    parser.add_argument(
-        "--fix",
-        action="store_true",
-        help="Fix fixable violations.",
-    )
-    parser.add_argument(
-        "-j",
-        "--jobs",
-        help="Number of jobs to use when processing files. Defaults to number of cores",
-        type=int,
-        default=None,
-    )
-    # XXX TODO: Get rid of this!
-    # Silence "Failed to determine module name"
-    # https://github.com/Instagram/LibCST/issues/944
-    parser.add_argument(
-        "--ignore-stderr",
-        action="store_true",
-    )
-
-    args = parser.parse_args()
-
-    files = codemod.gather_files(args.path)
-    command_instance = TorchCodemod(codemod.CodemodContext())
-    DIFF_CONTEXT = 5
-    try:
-        if args.ignore_stderr:
-            context = contextlib.redirect_stderr(io.StringIO())
-        else:
-            context = contextlib.nullcontext()
-        with context:
-            result = codemod.parallel_exec_transform_with_prettyprint(
-                command_instance,
-                files,
-                jobs=args.jobs,
-                unified_diff=(None if args.fix else DIFF_CONTEXT),
-                hide_progress=True,
-                format_code=False,
-                repo_root=None,
-            )
-    except KeyboardInterrupt:
-        print("Interrupted!", file=sys.stderr)
-        sys.exit(2)
-
-    print(
-        f"Finished checking {result.successes + result.skips + result.failures} files.",
-        file=sys.stderr,
-    )
-
-    if result.successes > 0:
-        if args.fix:
-            print(
-                f"Transformed {result.successes} files successfully.", file=sys.stderr
-            )
-        else:
-            print(
-                f"[{CYAN}*{ENDC}] {result.successes} "
-                "potentially fixable with the --fix option",
-                file=sys.stderr,
-            )
-
-    if result.failures > 0:
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()
