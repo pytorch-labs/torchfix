@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 import sys
 import libcst as cst
-from typing import Optional
+from typing import Optional, List
+from abc import ABC
 
 IS_TTY = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
 CYAN = "\033[96m" if IS_TTY else ""
@@ -29,6 +30,44 @@ class LintViolation:
         position = f"{colon}{self.line}{colon}{1 + self.column}{colon}"
         error_code = f"{RED}{BOLD}{self.error_code}{ENDC}"
         return f"{position} {error_code}{fixable} {self.message}"
+
+
+class TorchVisitor(cst.BatchableCSTVisitor, ABC):
+    METADATA_DEPENDENCIES = (
+        cst.metadata.QualifiedNameProvider,
+        cst.metadata.WhitespaceInclusivePositionProvider,
+    )
+
+    def __init__(self):
+        self.violations: List[LintViolation] = []
+
+
+def call_with_name_changes(
+    node: cst.Call, old_qualified_name: str, new_qualified_name: str
+) -> cst.Call:
+    """
+    Return new `Call` node with name changes.
+    """
+    old_begin, _, old_last = old_qualified_name.rpartition(".")
+    new_begin, _, new_last = new_qualified_name.rpartition(".")
+
+    # If the only difference is the last name part.
+    if old_begin == new_begin:
+        replacement = node.with_deep_changes(
+            old_node=node.func.attr,
+            value=new_last,
+        )
+
+    # If the last name part is the same and
+    # originally called without a dot: don't change the call site,
+    # just change the imports elsewhere.
+    elif old_last == new_last and isinstance(node.func, cst.Name):
+        replacement = None
+
+    # Replace with new_qualified_name.
+    else:
+        replacement = node.with_changes(func=cst.parse_expression(new_qualified_name))
+    return replacement
 
 
 def deep_multi_replace(tree, replacement_map):

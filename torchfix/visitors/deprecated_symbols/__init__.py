@@ -1,0 +1,108 @@
+import libcst as cst
+import yaml
+
+from ...common import TorchVisitor, call_with_name_changes, LintViolation
+
+from .range import call_replacement_range
+
+
+class TorchDeprecatedSymbolsVisitor(TorchVisitor):
+    def __init__(self, deprecated_config_path=None):
+        def read_deprecated_config(path=None):
+            deprecated_config = {}
+            if path is not None:
+                with open(path) as f:
+                    for item in yaml.load(f, yaml.SafeLoader):
+                        deprecated_config[item["name"]] = item
+            return deprecated_config
+
+        super().__init__()
+        self.deprecated_config = read_deprecated_config(deprecated_config_path)
+
+    def _call_replacement(self, node: cst.Call, qualified_name: str) -> cst.Call:
+        replacements_map = {"torch.range": call_replacement_range}
+        replacement = None
+
+        # Replace names for functions that have drop-in replacement.
+        function_name_replacement = self.deprecated_config.get(qualified_name, {}).get(
+            "replacement", ""
+        )
+        if function_name_replacement:
+            replacement = call_with_name_changes(
+                node, qualified_name, function_name_replacement
+            )
+
+        elif qualified_name in replacements_map:
+            replacement = replacements_map[qualified_name](node)
+
+        return replacement
+
+    def visit_Call(self, node):
+        # Guard against situations like `vmap(a)(b)`:
+        #
+        # Call(
+        #   func=Call(
+        #       func=Name(
+        #         value='vmap',
+        #
+        # The QualifiedName metadata for the outer call will be the same
+        # as for the inner call.
+        if isinstance(node.func, cst.Call):
+            return
+
+        name_metadata = list(
+            self.get_metadata(cst.metadata.QualifiedNameProvider, node)
+        )
+        if not name_metadata:
+            return
+        qualified_name = name_metadata[0].name
+
+        if qualified_name in self.deprecated_config:
+            position_metadata = self.get_metadata(
+                cst.metadata.WhitespaceInclusivePositionProvider, node
+            )
+            if self.deprecated_config[qualified_name]["remove_pr"] is None:
+                error_code = "TOR101"
+                message = f"Use of deprecated function {qualified_name}"
+            else:
+                error_code = "TOR001"
+                message = f"Use of removed function {qualified_name}"
+            replacement = self._call_replacement(node, qualified_name)
+
+            self.violations.append(
+                LintViolation(
+                    error_code=error_code,
+                    message=message,
+                    line=position_metadata.start.line,
+                    column=position_metadata.start.column,
+                    node=node,
+                    replacement=replacement,
+                )
+            )
+
+
+# TODO: refactor/generalize this.
+class _UpdateFunctorchImports(cst.CSTTransformer):
+    REPLACEMENTS = {
+        "vmap",
+        "grad",
+        "vjp",
+        "jvp",
+        "jacrev",
+        "jacfwd",
+        "hessian",
+        "functionalize",
+    }
+
+    def __init__(self):
+        self.changed = False
+
+    def leave_ImportFrom(
+        self, node: cst.ImportFrom, updated_node: cst.ImportFrom
+    ) -> cst.ImportFrom:
+        if node.module.value == "functorch" and all(
+            name.name.value in self.REPLACEMENTS for name in node.names
+        ):
+            self.changed = True
+            return updated_node.with_changes(module=cst.parse_expression("torch.func"))
+        return updated_node
