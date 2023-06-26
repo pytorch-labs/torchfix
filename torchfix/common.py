@@ -41,6 +41,42 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
     def __init__(self):
         self.violations: List[LintViolation] = []
 
+    @staticmethod
+    def get_specific_arg(
+        node: cst.Call, arg_name: str, arg_pos: int
+    ) -> Optional[cst.Arg]:
+        # `arg_pos` is zero-based.
+        curr_pos = 0
+        for arg in node.args:
+            if arg.keyword is None:
+                if curr_pos == arg_pos:
+                    return arg
+                curr_pos += 1
+            elif arg.keyword.value == arg_name:
+                return arg
+        return None
+
+    def get_qualified_name_for_call(self, node: cst.Call) -> Optional[str]:
+        # Guard against situations like `vmap(a)(b)`:
+        #
+        # Call(
+        #   func=Call(
+        #       func=Name(
+        #         value='vmap',
+        #
+        # The QualifiedName metadata for the outer call will be the same
+        # as for the inner call.
+        if isinstance(node.func, cst.Call):
+            return None
+
+        name_metadata = list(
+            self.get_metadata(cst.metadata.QualifiedNameProvider, node)
+        )
+        if not name_metadata:
+            return None
+        qualified_name = name_metadata[0].name
+        return qualified_name
+
 
 def call_with_name_changes(
     node: cst.Call, old_qualified_name: str, new_qualified_name: str

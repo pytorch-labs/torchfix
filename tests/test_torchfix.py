@@ -25,7 +25,7 @@ def test_empty():
 
 
 def test_checker_fixtures():
-    for source_path in (FIXTURES_PATH / "checker").glob("*.py"):
+    for source_path in FIXTURES_PATH.glob("**/checker/*.py"):
         LOGGER.info("Testing %s", source_path.relative_to(Path.cwd()))
         expected_path = str(source_path)[:-2] + "txt"
         expected_results = []
@@ -38,7 +38,7 @@ def test_checker_fixtures():
 
 
 def test_codemod_fixtures():
-    for source_path in (FIXTURES_PATH / "codemod").glob("*.py"):
+    for source_path in FIXTURES_PATH.glob("**/codemod/*.py"):
         LOGGER.info("Testing %s", source_path.relative_to(Path.cwd()))
         expected_path = source_path.with_suffix(".py.out")
         expected_results = expected_path.read_text()

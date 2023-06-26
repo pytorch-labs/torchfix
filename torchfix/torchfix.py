@@ -8,6 +8,8 @@ from .visitors.deprecated_symbols import (
     _UpdateFunctorchImports,
 )
 
+from .visitors.performance import TorchSynchronizedDataLoaderVisitor
+
 __version__ = "0.0.2"
 
 DEPRECATED_CONFIG_PATH = Path(__file__).absolute().parent / "deprecated_symbols.yaml"
@@ -26,6 +28,7 @@ class TorchChecker:
         self.violations = []
         self.visitors = [
             TorchDeprecatedSymbolsVisitor(DEPRECATED_CONFIG_PATH),
+            TorchSynchronizedDataLoaderVisitor(),
         ]
 
     def run(self):
@@ -48,6 +51,7 @@ class TorchCodemod(codemod.Codemod):
         violations = []
         visitors = [
             TorchDeprecatedSymbolsVisitor(DEPRECATED_CONFIG_PATH),
+            TorchSynchronizedDataLoaderVisitor(),
         ]
         wrapped_module.visit_batched(visitors)
         for v in visitors:

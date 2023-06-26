@@ -1,7 +1,11 @@
 import libcst as cst
 import yaml
 
-from ...common import TorchVisitor, call_with_name_changes, LintViolation
+from ...common import (
+    TorchVisitor,
+    call_with_name_changes,
+    LintViolation,
+)
 
 from .range import call_replacement_range
 
@@ -38,24 +42,9 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
         return replacement
 
     def visit_Call(self, node):
-        # Guard against situations like `vmap(a)(b)`:
-        #
-        # Call(
-        #   func=Call(
-        #       func=Name(
-        #         value='vmap',
-        #
-        # The QualifiedName metadata for the outer call will be the same
-        # as for the inner call.
-        if isinstance(node.func, cst.Call):
+        qualified_name = self.get_qualified_name_for_call(node)
+        if qualified_name is None:
             return
-
-        name_metadata = list(
-            self.get_metadata(cst.metadata.QualifiedNameProvider, node)
-        )
-        if not name_metadata:
-            return
-        qualified_name = name_metadata[0].name
 
         if qualified_name in self.deprecated_config:
             position_metadata = self.get_metadata(
