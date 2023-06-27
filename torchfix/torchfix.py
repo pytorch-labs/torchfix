@@ -9,10 +9,19 @@ from .visitors.deprecated_symbols import (
 )
 
 from .visitors.performance import TorchSynchronizedDataLoaderVisitor
+from .visitors.misc import TorchRequireGradVisitor
 
 __version__ = "0.0.2"
 
 DEPRECATED_CONFIG_PATH = Path(__file__).absolute().parent / "deprecated_symbols.yaml"
+
+
+def GET_ALL_VISITORS():
+    return [
+        TorchDeprecatedSymbolsVisitor(DEPRECATED_CONFIG_PATH),
+        TorchRequireGradVisitor(),
+        TorchSynchronizedDataLoaderVisitor(),
+    ]
 
 
 class TorchChecker:
@@ -26,10 +35,7 @@ class TorchChecker:
         module = cst.parse_module("".join(lines))
         self.module = cst.MetadataWrapper(module, unsafe_skip_copy=True)
         self.violations = []
-        self.visitors = [
-            TorchDeprecatedSymbolsVisitor(DEPRECATED_CONFIG_PATH),
-            TorchSynchronizedDataLoaderVisitor(),
-        ]
+        self.visitors = GET_ALL_VISITORS()
 
     def run(self):
         self.module.visit_batched(self.visitors)
@@ -49,10 +55,7 @@ class TorchCodemod(codemod.Codemod):
         wrapped_module = cst.MetadataWrapper(module, unsafe_skip_copy=True)
 
         violations = []
-        visitors = [
-            TorchDeprecatedSymbolsVisitor(DEPRECATED_CONFIG_PATH),
-            TorchSynchronizedDataLoaderVisitor(),
-        ]
+        visitors = GET_ALL_VISITORS()
         wrapped_module.visit_batched(visitors)
         for v in visitors:
             violations += v.violations

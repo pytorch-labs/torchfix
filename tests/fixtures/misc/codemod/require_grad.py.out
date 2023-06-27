@@ -1,0 +1,4 @@
+import torch
+x = torch.zeros(1)
+x.requires_grad = False
+x.requires_grad = True
