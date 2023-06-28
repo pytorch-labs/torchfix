@@ -1,3 +1,6 @@
+# Check no crash on no-module import
+from . import residue_constants as rc
+
 import torch
 import functorch
 from functorch import (
