@@ -3,6 +3,9 @@ name = "TorchFix"
 dynamic = ["version"]
 dependencies = ["flake8>=3.8.2", "PyYAML", "libcst>=1.0.1,<1.1.0"]
 
+[project.scripts]
+torchfix = "torchfix.__main__:main"
+
 [project.entry-points]
 "flake8.extension" = {TOR = "torchfix.torchfix:TorchChecker"}
 
