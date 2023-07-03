@@ -8,6 +8,7 @@ from ...common import (
 )
 
 from .range import call_replacement_range
+from .cholesky import call_replacement_cholesky
 
 
 class TorchDeprecatedSymbolsVisitor(TorchVisitor):
@@ -23,8 +24,11 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
         super().__init__()
         self.deprecated_config = read_deprecated_config(deprecated_config_path)
 
-    def _call_replacement(self, node: cst.Call, qualified_name: str) -> cst.Call:
-        replacements_map = {"torch.range": call_replacement_range}
+    def _call_replacement(self, node: cst.Call, qualified_name: str) -> cst.CSTNode:
+        replacements_map = {
+            "torch.cholesky": call_replacement_cholesky,
+            "torch.range": call_replacement_range,
+        }
         replacement = None
 
         # Replace names for functions that have drop-in replacement.
