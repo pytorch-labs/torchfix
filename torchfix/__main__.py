@@ -1,12 +1,11 @@
 import argparse
 import libcst.codemod as codemod
 
-from .torchfix import TorchCodemod
 import contextlib
 import sys
 import io
 
-
+from .torchfix import TorchCodemod
 from .common import CYAN, ENDC
 
 
@@ -47,7 +46,8 @@ def main() -> None:
         if args.ignore_stderr:
             context = contextlib.redirect_stderr(io.StringIO())
         else:
-            context = contextlib.nullcontext()
+            # Should get rid of this code eventually.
+            context = contextlib.nullcontext()  # type: ignore
         with context:
             result = codemod.parallel_exec_transform_with_prettyprint(
                 command_instance,

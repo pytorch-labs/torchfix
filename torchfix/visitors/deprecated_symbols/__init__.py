@@ -1,5 +1,7 @@
 import libcst as cst
 import yaml
+from typing import Optional
+from collections.abc import Sequence
 
 from ...common import (
     TorchVisitor,
@@ -24,24 +26,26 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
         super().__init__()
         self.deprecated_config = read_deprecated_config(deprecated_config_path)
 
-    def _call_replacement(self, node: cst.Call, qualified_name: str) -> cst.CSTNode:
+    def _call_replacement(
+        self, node: cst.Call, qualified_name: str
+    ) -> Optional[cst.CSTNode]:
         replacements_map = {
             "torch.cholesky": call_replacement_cholesky,
             "torch.range": call_replacement_range,
         }
         replacement = None
 
-        # Replace names for functions that have drop-in replacement.
-        function_name_replacement = self.deprecated_config.get(qualified_name, {}).get(
-            "replacement", ""
-        )
-        if function_name_replacement:
-            replacement = call_with_name_changes(
-                node, qualified_name, function_name_replacement
-            )
-
-        elif qualified_name in replacements_map:
+        if qualified_name in replacements_map:
             replacement = replacements_map[qualified_name](node)
+        else:
+            # Replace names for functions that have drop-in replacement.
+            function_name_replacement = self.deprecated_config.get(
+                qualified_name, {}
+            ).get("replacement", "")
+            if function_name_replacement:
+                replacement = call_with_name_changes(
+                    node, qualified_name, function_name_replacement
+                )
 
         return replacement
 
@@ -93,8 +97,10 @@ class _UpdateFunctorchImports(cst.CSTTransformer):
     def leave_ImportFrom(
         self, node: cst.ImportFrom, updated_node: cst.ImportFrom
     ) -> cst.ImportFrom:
-        if getattr(node.module, "value", None) == "functorch" and all(
-            name.name.value in self.REPLACEMENTS for name in node.names
+        if (
+            getattr(node.module, "value", None) == "functorch"
+            and isinstance(node.names, Sequence)
+            and all(name.name.value in self.REPLACEMENTS for name in node.names)
         ):
             self.changed = True
             return updated_node.with_changes(module=cst.parse_expression("torch.func"))

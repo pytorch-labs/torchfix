@@ -3,7 +3,7 @@ import libcst.matchers as m
 from typing import Optional, Tuple
 
 
-def call_replacement_range(node: cst.Call) -> cst.Call:
+def call_replacement_range(node: cst.Call) -> Optional[cst.Call]:
     """Replace `range` with `arange`.
     Add `step` to the `end` argument as `arange` has the interval `[start, end)`.
     """
@@ -30,6 +30,7 @@ def call_replacement_range(node: cst.Call) -> cst.Call:
             elif len(non_kw_args) == 3:
                 end_arg = non_kw_args[1]
                 step_arg = non_kw_args[2]
+        assert isinstance(end_arg, cst.Arg)
         return end_arg, step_arg
 
     end_arg, step_arg = _get_range_args(node)
@@ -44,7 +45,9 @@ def call_replacement_range(node: cst.Call) -> cst.Call:
             step_arg,
             m.Arg(value=m.UnaryOperation(operator=m.Minus(), expression=m.Integer())),
         ):
-            step = -int(step_arg.value.expression.value)
+            # Ignore type error here and further in this file.
+            # See https://github.com/Instagram/LibCST/issues/964
+            step = -int(step_arg.value.expression.value)  # type: ignore
 
         # Bail out, don't know how to update with non-integer `step`.
         else:
@@ -73,10 +76,10 @@ def call_replacement_range(node: cst.Call) -> cst.Call:
         end_arg,
         m.Arg(value=m.UnaryOperation(operator=m.Minus(), expression=m.Integer())),
     ):
-        end = -int(end_arg.value.expression.value) + step
+        end = -int(end_arg.value.expression.value) + step  # type: ignore
         if end < 0:
             updated_end_arg = end_arg.with_deep_changes(
-                old_node=end_arg.value.expression, value=str(-end)
+                old_node=end_arg.value.expression, value=str(-end)  # type: ignore
             )
         else:
             # `end` became non-negative
@@ -90,7 +93,7 @@ def call_replacement_range(node: cst.Call) -> cst.Call:
             value=m.BinaryOperation(operator=m.Subtract(), right=m.Integer(value="1"))
         ),
     ):
-        updated_end_arg = end_arg.with_changes(value=end_arg.value.left)
+        updated_end_arg = end_arg.with_changes(value=end_arg.value.left)  # type: ignore
 
     # `end` something else: add `+ 1` at the end
     else:
@@ -104,9 +107,10 @@ def call_replacement_range(node: cst.Call) -> cst.Call:
 
     replacement = node
     if updated_end_arg is not None:
-        replacement = replacement.deep_replace(end_arg, updated_end_arg)
+        # Ignore type error, see https://github.com/Instagram/LibCST/issues/965
+        replacement = replacement.deep_replace(end_arg, updated_end_arg)  # type: ignore
     replacement = replacement.with_deep_changes(
-        old_node=replacement.func.attr, value="arange"
+        old_node=cst.ensure_type(replacement.func, cst.Attribute).attr, value="arange"
     )
 
     return replacement

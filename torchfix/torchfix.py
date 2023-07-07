@@ -62,6 +62,7 @@ class TorchCodemod(codemod.Codemod):
 
         fixes_count = 0
         replacement_map = {}
+        assert self.context.filename is not None
         for violation in violations:
             if violation.replacement is not None:
                 replacement_map[id(violation.node)] = violation.replacement
@@ -70,7 +71,7 @@ class TorchCodemod(codemod.Codemod):
                 path = Path(self.context.filename).relative_to(Path.cwd())
             except ValueError:
                 # Not a subpath of a current dir, use absolute path
-                path = self.context.filename
+                path = Path(self.context.filename)
             print(f"{path}{violation.codemod_result()}")
 
         new_module = deep_multi_replace(module, replacement_map)

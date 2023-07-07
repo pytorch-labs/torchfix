@@ -22,5 +22,8 @@ exclude = "tests/fixtures/*"
 [tool.setuptools.package-data]
 "*" = ["*.yaml"]
 
+[tool.mypy]
+exclude = ["tests/fixtures", "build"]
+
 [tool.setuptools.dynamic]
 version = {attr = "torchfix.torchfix.__version__"}
