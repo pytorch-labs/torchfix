@@ -11,6 +11,7 @@ from ...common import (
 
 from .range import call_replacement_range
 from .cholesky import call_replacement_cholesky
+from .qr import call_replacement_qr
 
 
 class TorchDeprecatedSymbolsVisitor(TorchVisitor):
@@ -32,6 +33,7 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
         replacements_map = {
             "torch.cholesky": call_replacement_cholesky,
             "torch.range": call_replacement_range,
+            "torch.qr": call_replacement_qr,
         }
         replacement = None
 
