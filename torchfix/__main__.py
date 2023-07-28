@@ -40,6 +40,18 @@ def main() -> None:
     args = parser.parse_args()
 
     files = codemod.gather_files(args.path)
+
+    # Filter out files that don't have "torch" string in them.
+    # This avoids expensive parsing.
+    MARKER = "torch"  # this will catch import torch or functorch
+    torch_files = []
+    for file in files:
+        with open(file, errors='replace') as f:
+            for line in f:
+                if MARKER in line:
+                    torch_files.append(file)
+                    break
+
     command_instance = TorchCodemod(codemod.CodemodContext())
     DIFF_CONTEXT = 5
     try:
@@ -51,7 +63,7 @@ def main() -> None:
         with context:
             result = codemod.parallel_exec_transform_with_prettyprint(
                 command_instance,
-                files,
+                torch_files,
                 jobs=args.jobs,
                 unified_diff=(None if args.fix else DIFF_CONTEXT),
                 hide_progress=True,

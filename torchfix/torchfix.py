@@ -32,17 +32,28 @@ class TorchChecker:
     # See https://flake8.pycqa.org/en/latest/plugin-development/plugin-parameters.html
     # `tree` is unused, but the plugin doesn't work without it.
     def __init__(self, tree, lines):
-        module = cst.parse_module("".join(lines))
-        self.module = cst.MetadataWrapper(module, unsafe_skip_copy=True)
-        self.violations = []
-        self.visitors = GET_ALL_VISITORS()
+        # Filter out files that don't have "torch" string in them.
+        # This avoids expensive parsing.
+        MARKER = "torch"  # this will catch import torch or functorch
+        has_marker = False
+        self.module = None
+        for line in lines:
+            if MARKER in line:
+                has_marker = True
+                break
+        if has_marker:
+            module = cst.parse_module("".join(lines))
+            self.module = cst.MetadataWrapper(module, unsafe_skip_copy=True)
+            self.violations = []
+            self.visitors = GET_ALL_VISITORS()
 
     def run(self):
-        self.module.visit_batched(self.visitors)
-        for v in self.visitors:
-            self.violations += v.violations
-        for violation in self.violations:
-            yield violation.flake8_result()
+        if self.module:
+            self.module.visit_batched(self.visitors)
+            for v in self.visitors:
+                self.violations += v.violations
+            for violation in self.violations:
+                yield violation.flake8_result()
 
 
 class TorchCodemod(codemod.Codemod):
