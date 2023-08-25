@@ -4,6 +4,7 @@ import libcst.codemod as codemod
 import contextlib
 import sys
 import io
+import os
 
 from .torchfix import TorchCodemod
 from .common import CYAN, ENDC
@@ -46,11 +47,13 @@ def main() -> None:
     MARKER = "torch"  # this will catch import torch or functorch
     torch_files = []
     for file in files:
-        with open(file, errors='replace') as f:
-            for line in f:
-                if MARKER in line:
-                    torch_files.append(file)
-                    break
+        # TODO: remove the check when https://github.com/Instagram/LibCST/pull/994 lands
+        if os.path.isfile(file):  # `codemod.gather_files` can return dirs with ".py"
+            with open(file, errors='replace') as f:
+                for line in f:
+                    if MARKER in line:
+                        torch_files.append(file)
+                        break
 
     command_instance = TorchCodemod(codemod.CodemodContext())
     DIFF_CONTEXT = 5
