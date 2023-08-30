@@ -30,8 +30,9 @@ Flake8 normally will run the TorchFix linter.
 To see only TorchFix warnings without the rest of the Flake8 linters, you can run
 `flake8 --isolated --select=TOR`
 
-TorchFix can also be run as a standalone program: `torchfix --ignore-stderr .`
+TorchFix can also be run as a standalone program: `torchfix .`
 Add `--fix` parameter to try to autofix some of the issues (the files will be overwritten!)
+To see some additional debug info, add `--show-stderr` parameter.
 
 Please keep in mind that autofix is a best-effort mechanism. Given the dynamic nature of Python,
 and especially the prototype/alpha version status of TorchFix, it's very difficult to have
