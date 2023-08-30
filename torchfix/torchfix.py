@@ -15,6 +15,8 @@ __version__ = "0.0.2"
 
 DEPRECATED_CONFIG_PATH = Path(__file__).absolute().parent / "deprecated_symbols.yaml"
 
+DISABLED_BY_DEFAULT = ["TOR3", "TOR4"]
+
 
 def GET_ALL_VISITORS():
     return [
@@ -54,6 +56,10 @@ class TorchChecker:
                 self.violations += v.violations
             for violation in self.violations:
                 yield violation.flake8_result()
+
+    @staticmethod
+    def add_options(optmanager):
+        optmanager.extend_default_ignore(DISABLED_BY_DEFAULT)
 
 
 class TorchCodemod(codemod.Codemod):

@@ -49,7 +49,7 @@ def main() -> None:
     for file in files:
         # TODO: remove the check when https://github.com/Instagram/LibCST/pull/994 lands
         if os.path.isfile(file):  # `codemod.gather_files` can return dirs with ".py"
-            with open(file, errors='replace') as f:
+            with open(file, errors="replace") as f:
                 for line in f:
                     if MARKER in line:
                         torch_files.append(file)
