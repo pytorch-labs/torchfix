@@ -99,7 +99,7 @@ class TorchCodemod(codemod.Codemod):
         assert self.context.filename is not None
         for violation in violations:
             skip_violation = False
-            if getattr(self.config, "select") != "ALL":
+            if self.config is None or self.config.select != "ALL":
                 for disabled_code in DISABLED_BY_DEFAULT:
                     if violation.error_code.startswith(disabled_code):
                         skip_violation = True

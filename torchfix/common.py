@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import sys
 import libcst as cst
 from libcst.metadata import QualifiedNameProvider, WhitespaceInclusivePositionProvider
-from typing import Optional, List
+from typing import Optional, List, Union
 from abc import ABC
 
 IS_TTY = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
@@ -38,6 +38,8 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
         QualifiedNameProvider,
         WhitespaceInclusivePositionProvider,
     )
+
+    ERROR_CODE: Union[str, List[str]]
 
     def __init__(self):
         self.violations: List[LintViolation] = []
