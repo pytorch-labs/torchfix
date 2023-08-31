@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 import libcst as cst
 import libcst.codemod as codemod
 
@@ -26,6 +28,7 @@ def GET_ALL_VISITORS():
     ]
 
 
+# Flake8 plugin
 class TorchChecker:
     name = "TorchFix"
     version = __version__
@@ -62,7 +65,21 @@ class TorchChecker:
         optmanager.extend_default_ignore(DISABLED_BY_DEFAULT)
 
 
+# Standalone torchfix command
+@dataclass
+class TorchCodemodConfig:
+    select: Optional[str] = None
+
+
 class TorchCodemod(codemod.Codemod):
+    def __init__(
+        self,
+        context: codemod.CodemodContext,
+        config: Optional[TorchCodemodConfig] = None,
+    ) -> None:
+        super().__init__(context)
+        self.config = config
+
     def transform_module_impl(self, module: cst.Module) -> cst.Module:
         # We use `unsafe_skip_copy`` here not only to save some time, but
         # because `deep_replace`` is identity-based and will not work on
@@ -81,6 +98,15 @@ class TorchCodemod(codemod.Codemod):
         replacement_map = {}
         assert self.context.filename is not None
         for violation in violations:
+            skip_violation = False
+            if getattr(self.config, "select") != "ALL":
+                for disabled_code in DISABLED_BY_DEFAULT:
+                    if violation.error_code.startswith(disabled_code):
+                        skip_violation = True
+                        break
+            if skip_violation:
+                continue
+
             if violation.replacement is not None:
                 replacement_map[id(violation.node)] = violation.replacement
                 fixes_count += 1

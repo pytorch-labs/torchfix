@@ -6,7 +6,7 @@ import sys
 import io
 import os
 
-from .torchfix import TorchCodemod
+from .torchfix import TorchCodemod, TorchCodemodConfig
 from .common import CYAN, ENDC
 
 
@@ -30,6 +30,14 @@ def main() -> None:
         type=int,
         default=None,
     )
+    parser.add_argument(
+        "--select",
+        help="ALL to enable rules disabled by default",
+        choices=[
+            "ALL",
+        ],
+    )
+
     # XXX TODO: Get rid of this!
     # Silence "Failed to determine module name"
     # https://github.com/Instagram/LibCST/issues/944
@@ -55,7 +63,9 @@ def main() -> None:
                         torch_files.append(file)
                         break
 
-    command_instance = TorchCodemod(codemod.CodemodContext())
+    config = TorchCodemodConfig()
+    config.select = args.select
+    command_instance = TorchCodemod(codemod.CodemodContext(), config)
     DIFF_CONTEXT = 5
     try:
         if not args.show_stderr:

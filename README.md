@@ -28,7 +28,7 @@ After the installation, TorchFix will be available as a Flake8 plugin, so runnin
 Flake8 normally will run the TorchFix linter.
 
 To see only TorchFix warnings without the rest of the Flake8 linters, you can run
-`flake8 --isolated --select=TOR`
+`flake8 --isolated --select=TOR0,TOR1,TOR2`
 
 TorchFix can also be run as a standalone program: `torchfix .`
 Add `--fix` parameter to try to autofix some of the issues (the files will be overwritten!)
@@ -37,6 +37,12 @@ To see some additional debug info, add `--show-stderr` parameter.
 Please keep in mind that autofix is a best-effort mechanism. Given the dynamic nature of Python,
 and especially the prototype/alpha version status of TorchFix, it's very difficult to have
 certainty when making changes to code, even for the seemingly trivial fixes.
+
+Warnings for issues with codes starting with TOR0, TOR1, and TOR2 are enabled by default.
+Warnings with other codes may be too noisy, so not enabled by default.
+To enable them, use standard flake8 configuration options for the plugin mode or use
+`torchfix --select=ALL .` for the standalone mode.
+
 
 ## Reporting problems
 
