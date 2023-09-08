@@ -12,8 +12,9 @@ from .visitors.deprecated_symbols import (
 
 from .visitors.performance import TorchSynchronizedDataLoaderVisitor
 from .visitors.misc import TorchRequireGradVisitor
+from .visitors.vision import TorchVisionDeprecatedPretrainedVisitor
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 DEPRECATED_CONFIG_PATH = Path(__file__).absolute().parent / "deprecated_symbols.yaml"
 
@@ -25,6 +26,7 @@ def GET_ALL_VISITORS():
         TorchDeprecatedSymbolsVisitor(DEPRECATED_CONFIG_PATH),
         TorchRequireGradVisitor(),
         TorchSynchronizedDataLoaderVisitor(),
+        TorchVisionDeprecatedPretrainedVisitor(),
     ]
 
 
@@ -88,11 +90,13 @@ class TorchCodemod(codemod.Codemod):
         # instead of `module`.
         wrapped_module = cst.MetadataWrapper(module, unsafe_skip_copy=True)
 
-        violations = []
         visitors = GET_ALL_VISITORS()
+        violations = []
+        needed_imports = []
         wrapped_module.visit_batched(visitors)
         for v in visitors:
             violations += v.violations
+            needed_imports += v.needed_imports
 
         fixes_count = 0
         replacement_map = {}
@@ -119,10 +123,15 @@ class TorchCodemod(codemod.Codemod):
 
         new_module = deep_multi_replace(module, replacement_map)
 
-        update_imports_visitor = _UpdateFunctorchImports()
-        new_module = new_module.visit(update_imports_visitor)
+        add_imports_visitor = codemod.visitors.AddImportsVisitor(
+            self.context, needed_imports
+        )
+        new_module = new_module.visit(add_imports_visitor)
 
-        if fixes_count == 0 and not update_imports_visitor.changed:
+        update_functorch_imports_visitor = _UpdateFunctorchImports()
+        new_module = new_module.visit(update_functorch_imports_visitor)
+
+        if fixes_count == 0 and not update_functorch_imports_visitor.changed:
             raise codemod.SkipFile("No changes")
 
         return new_module

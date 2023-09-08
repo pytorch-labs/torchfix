@@ -1,0 +1,7 @@
+5:1 TOR201 Parameter `pretrained` is deprecated, please use `weights` instead.
+6:1 TOR201 Parameter `pretrained` is deprecated, please use `weights` instead.
+7:1 TOR201 Parameter `pretrained` is deprecated, please use `weights` instead.
+8:1 TOR201 Parameter `pretrained` is deprecated, please use `weights` instead.
+9:1 TOR201 Parameter `pretrained_backbone` is deprecated, please use `weights_backbone` instead.
+10:1 TOR201 Parameter `pretrained_backbone` is deprecated, please use `weights_backbone` instead.
+14:1 TOR201 Parameter `pretrained` is deprecated, please use `weights` instead.

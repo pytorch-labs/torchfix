@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import sys
 import libcst as cst
 from libcst.metadata import QualifiedNameProvider, WhitespaceInclusivePositionProvider
+from libcst.codemod.visitors import ImportItem
 from typing import Optional, List, Union
 from abc import ABC
 
@@ -41,8 +42,9 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
 
     ERROR_CODE: Union[str, List[str]]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.violations: List[LintViolation] = []
+        self.needed_imports: List[ImportItem] = []
 
     @staticmethod
     def get_specific_arg(
