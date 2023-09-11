@@ -14,6 +14,6 @@ pretrained = random.choice([False, True])
 torchvision.models.resnet50(pretrained=pretrained)
 
 # ok
-from torchvision.prototype.models import ResNet50_Weights
+from torchvision.models import ResNet50_Weights
 torchvision.models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
 torchvision.models.resnet50(weights=None)

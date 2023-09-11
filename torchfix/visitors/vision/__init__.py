@@ -161,17 +161,17 @@ class TorchVisionDeprecatedPretrainedVisitor(TorchVisitor):
             weights_arg = None
             if cst.ensure_type(old_arg.value, cst.Name).value == "True":
                 weights_str = self.MODEL_WEIGHTS[(model_name, old_arg_name)]
+                if is_backbone is False and len(model_name.split(".")) > 1:
+                    # Prepend things like 'detection.' to the weights string
+                    weights_str = model_name.split(".")[0] + "." + weights_str
+                weights_str = "models." + weights_str
                 weights_arg = cst.ensure_type(
                     cst.parse_expression(f"f({new_arg_name}={weights_str})"), cst.Call
                 ).args[0]
-
-                import_module_name = "torchvision.models"
-                if is_backbone is False and len(model_name.split(".")) > 1:
-                    import_module_name += "." + model_name.split(".")[0]
-                self.needed_imports.append(
+                self.needed_imports.add(
                     ImportItem(
-                        module_name=import_module_name,
-                        obj_name=weights_str.split(".")[0],
+                        module_name="torchvision",
+                        obj_name="models",
                     )
                 )
             elif cst.ensure_type(old_arg.value, cst.Name).value == "False":

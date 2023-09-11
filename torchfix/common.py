@@ -3,7 +3,7 @@ import sys
 import libcst as cst
 from libcst.metadata import QualifiedNameProvider, WhitespaceInclusivePositionProvider
 from libcst.codemod.visitors import ImportItem
-from typing import Optional, List, Union
+from typing import Optional, List, Set, Union
 from abc import ABC
 
 IS_TTY = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
@@ -44,7 +44,7 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
 
     def __init__(self) -> None:
         self.violations: List[LintViolation] = []
-        self.needed_imports: List[ImportItem] = []
+        self.needed_imports: Set[ImportItem] = set()
 
     @staticmethod
     def get_specific_arg(
