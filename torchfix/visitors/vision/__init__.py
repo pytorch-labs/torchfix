@@ -150,6 +150,27 @@ class TorchVisionDeprecatedPretrainedVisitor(TorchVisitor):
     }
     # fmt: on
 
+    # The same model can be imported from torchvision.models directly,
+    # or from a submodule like torchvision.models.resnet.
+    MODEL_SUBMODULES = (
+        "alexnet",
+        "convnext",
+        "densenet",
+        "efficientnet",
+        "googlenet",
+        "inception",
+        "mnasnet",
+        "mobilenet",
+        "regnet",
+        "resnet",
+        "shufflenetv2",
+        "squeezenet",
+        "vgg",
+        "vision_transformer",
+        "swin_transformer",
+        "maxvit",
+    )
+
     def visit_Call(self, node):
         def _new_arg_and_import(
             old_arg: cst.Arg, is_backbone: bool
@@ -185,8 +206,14 @@ class TorchVisionDeprecatedPretrainedVisitor(TorchVisitor):
             return
         if qualified_name.startswith("torchvision.models"):
             model_name = qualified_name[len("torchvision.models") + 1 :]
-            message = None
+            for submodule in self.MODEL_SUBMODULES:
+                if model_name.startswith(submodule + "."):
+                    model_name = model_name[len(submodule) + 1 :]
 
+            if (model_name, "pretrained") not in self.MODEL_WEIGHTS:
+                return
+
+            message = None
             pretrained_arg = self.get_specific_arg(node, "pretrained", 0)
             if pretrained_arg is not None:
                 message = "Parameter `pretrained` is deprecated, please use `weights` instead."

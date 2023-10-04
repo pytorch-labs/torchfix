@@ -17,3 +17,7 @@ torchvision.models.resnet50(pretrained=pretrained)
 from torchvision.models import ResNet50_Weights
 torchvision.models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
 torchvision.models.resnet50(weights=None)
+
+# Make sure no false positives on non-model functions
+from torchvision.models.vgg import make_layers, cfgs
+make_layers(cfgs['D'], False)
