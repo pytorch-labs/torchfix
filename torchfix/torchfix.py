@@ -16,7 +16,7 @@ from .visitors.vision import (
     TorchVisionDeprecatedPretrainedVisitor, TorchVisionDeprecatedToTensorVisitor
 )
 
-__version__ = "0.0.3"
+__version__ = "0.1.0"
 
 DEPRECATED_CONFIG_PATH = Path(__file__).absolute().parent / "deprecated_symbols.yaml"
 

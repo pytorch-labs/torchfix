@@ -11,7 +11,7 @@ reporting issues.
 TorchFix can be used as a Flake8 plugin (linting only) or as a standalone
 program (with autofix available for a subset of the lint violations).
 
-Currently TorchFix is in a **prototype/alpha version** stage, so there are a lot of rough
+Currently TorchFix is in a **beta version** stage, so there are still a lot of rough
 edges and many things can and will change.
 
 ## Installation
@@ -35,7 +35,7 @@ Add `--fix` parameter to try to autofix some of the issues (the files will be ov
 To see some additional debug info, add `--show-stderr` parameter.
 
 Please keep in mind that autofix is a best-effort mechanism. Given the dynamic nature of Python,
-and especially the prototype/alpha version status of TorchFix, it's very difficult to have
+and especially the beta version status of TorchFix, it's very difficult to have
 certainty when making changes to code, even for the seemingly trivial fixes.
 
 Warnings for issues with codes starting with TOR0, TOR1, and TOR2 are enabled by default.
