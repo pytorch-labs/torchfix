@@ -24,3 +24,5 @@ transforms.ToTensor
 import torchvision.transforms.v2
 
 torchvision.transforms.v2.ToTensor
+
+from torchvision.transforms.v2 import *

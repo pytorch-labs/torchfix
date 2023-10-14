@@ -13,10 +13,11 @@ from .visitors.deprecated_symbols import (
 from .visitors.performance import TorchSynchronizedDataLoaderVisitor
 from .visitors.misc import TorchRequireGradVisitor
 from .visitors.vision import (
-    TorchVisionDeprecatedPretrainedVisitor, TorchVisionDeprecatedToTensorVisitor
+    TorchVisionDeprecatedPretrainedVisitor,
+    TorchVisionDeprecatedToTensorVisitor,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 DEPRECATED_CONFIG_PATH = Path(__file__).absolute().parent / "deprecated_symbols.yaml"
 

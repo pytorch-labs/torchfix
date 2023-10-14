@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 import libcst as cst
 
 from ...common import LintViolation, TorchVisitor
@@ -34,10 +35,11 @@ class TorchVisionDeprecatedToTensorVisitor(TorchVisitor):
         if module_path is None:
             return
 
-        for import_node in node.names:
-            self._maybe_add_violation(
-                f"{module_path}.{import_node.evaluated_name}", import_node
-            )
+        if isinstance(node.names, Sequence):
+            for import_node in node.names:
+                self._maybe_add_violation(
+                    f"{module_path}.{import_node.evaluated_name}", import_node
+                )
 
     def visit_Attribute(self, node):
         qualified_names = self.get_metadata(cst.metadata.QualifiedNameProvider, node)
