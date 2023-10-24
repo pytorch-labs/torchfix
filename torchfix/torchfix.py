@@ -16,6 +16,7 @@ from .visitors.vision import (
     TorchVisionDeprecatedPretrainedVisitor,
     TorchVisionDeprecatedToTensorVisitor,
 )
+from .visitors.security import TorchUnsafeLoadVisitor
 
 __version__ = "0.1.1"
 
@@ -31,6 +32,7 @@ def GET_ALL_VISITORS():
         TorchSynchronizedDataLoaderVisitor(),
         TorchVisionDeprecatedPretrainedVisitor(),
         TorchVisionDeprecatedToTensorVisitor(),
+        TorchUnsafeLoadVisitor(),
     ]
 
 
