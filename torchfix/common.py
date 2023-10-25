@@ -120,3 +120,11 @@ def deep_multi_replace(tree, replacement_map):
             return updated_node
 
     return tree.visit(MultiChildReplacementTransformer(replacement_map))
+
+
+def get_module_name(node: cst.Call, default: Optional[str] = None) -> Optional[str]:
+    if not isinstance(node.func, cst.Attribute):
+        return default
+    if not isinstance(node.func.value, cst.Name):
+        return default
+    return node.func.value.value

@@ -1,4 +1,5 @@
 import libcst as cst
+from ...common import get_module_name
 
 
 def call_replacement_chain_matmul(node: cst.Call) -> cst.CSTNode:
@@ -19,7 +20,8 @@ def call_replacement_chain_matmul(node: cst.Call) -> cst.CSTNode:
         replacement_args = [matrices_arg]
     else:
         replacement_args = [matrices_arg, out_arg]
-    replacement = cst.parse_expression("torch.linalg.multi_dot(args)")
+    module_name = get_module_name(node, 'torch')
+    replacement = cst.parse_expression(f"{module_name}.linalg.multi_dot(args)")
     replacement = replacement.with_changes(args=replacement_args)
 
     return replacement

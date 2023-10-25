@@ -1,6 +1,6 @@
 import libcst as cst
 from typing import Optional
-from ...common import TorchVisitor
+from ...common import (TorchVisitor, get_module_name)
 
 
 def call_replacement_qr(node: cst.Call) -> Optional[cst.CSTNode]:
@@ -27,7 +27,8 @@ def call_replacement_qr(node: cst.Call) -> Optional[cst.CSTNode]:
             comma=cst.MaybeSentinel.DEFAULT
         )
         replacement_args = [input_arg]
-    replacement = cst.parse_expression("torch.linalg.qr(args)")
+    module_name = get_module_name(node, "torch")
+    replacement = cst.parse_expression(f"{module_name}.linalg.qr(args)")
     replacement = replacement.with_changes(args=replacement_args)
 
     return replacement
