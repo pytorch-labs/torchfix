@@ -14,12 +14,10 @@ class TorchRequireGradVisitor(TorchVisitor):
     MESSAGE = "Likely typo `require_grad` in assignment. Did you mean `requires_grad`?"
 
     def visit_Assign(self, node):
-        # Look for any assignment with `require_grad` attribute on the left
-        # and `False` or `True` on the right.
+        # Look for any assignment with `require_grad` attribute on the left.
         #
-        # If this causes false-positives on real code (unlikely),
-        # we can do type inference (not sure if feasible here) or
-        # at least check that `torch` is imported in the file.
+        # This is unlikely to cause false-positives on real code, especially
+        # because TorchFix only looks at files that have a `torch` string.
         if m.matches(
             node,
             m.Assign(
@@ -28,7 +26,6 @@ class TorchRequireGradVisitor(TorchVisitor):
                         target=m.Attribute(attr=m.Name(value="require_grad"))
                     )
                 ],
-                value=(m.Name("True") | m.Name("False")),
             ),
         ):
             replacement = node.with_deep_changes(
