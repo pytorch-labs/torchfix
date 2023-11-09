@@ -25,6 +25,24 @@ class TorchUnsafeLoadVisitor(TorchVisitor):
                     cst.metadata.WhitespaceInclusivePositionProvider, node
                 )
 
+                # Add `weights_only=True` if there is no `pickle_module`.
+                # (do not add `weights_only=False` with `pickle_module`, as it
+                # needs to be an explicit choice).
+                #
+                # This codemod is somewhat unsafe correctness-wise
+                # because full pickling functionality may still be needed
+                # even without `pickle_module`,
+                # so the changes need to be verified/tested.
+                replacement = None
+                pickle_module_arg = self.get_specific_arg(node, "pickle_module", 2)
+                if pickle_module_arg is None:
+                    weights_only_arg = cst.ensure_type(
+                        cst.parse_expression("f(weights_only=True)"), cst.Call
+                    ).args[0]
+                    replacement = node.with_changes(
+                        args=node.args + (weights_only_arg,)
+                    )
+
                 self.violations.append(
                     LintViolation(
                         error_code=self.ERROR_CODE,
@@ -32,6 +50,6 @@ class TorchUnsafeLoadVisitor(TorchVisitor):
                         line=position_metadata.start.line,
                         column=position_metadata.start.column,
                         node=node,
-                        replacement=None,
+                        replacement=replacement,
                     )
                 )
