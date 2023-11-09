@@ -1,3 +1,8 @@
+- name: torch.solve
+  deprecate_pr: https://github.com/pytorch/pytorch/pull/57741
+  remove_pr: https://github.com/pytorch/pytorch/pull/70986
+  reference: https://github.com/pytorch/test-infra/tree/main/tools/torchfix#torchsolve
+
 - name: torch.qr
   deprecate_pr: https://github.com/pytorch/pytorch/pull/57745
   remove_pr:

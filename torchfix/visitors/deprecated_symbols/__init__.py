@@ -72,6 +72,10 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
                 message = f"Use of removed function {qualified_name}"
             replacement = self._call_replacement(node, qualified_name)
 
+            reference = self.deprecated_config[qualified_name].get("reference")
+            if reference is not None:
+                message = f"{message}: {reference}"
+
             self.violations.append(
                 LintViolation(
                     error_code=error_code,

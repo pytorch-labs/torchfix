@@ -48,3 +48,19 @@ To enable them, use standard flake8 configuration options for the plugin mode or
 
 If you encounter a bug or some other problem with TorchFix, please file an issue on
 https://github.com/pytorch/test-infra/issues, mentioning [TorchFix] in the title.
+
+
+## Rules
+
+### TOR001 Use of removed function
+
+#### torch.solve
+
+This function was deprecated since PyTorch version 1.9 and is now removed.
+
+`torch.solve` is deprecated in favor of `torch.linalg.solve`.
+`torch.linalg.solve` has its arguments reversed and does not return the LU factorization.
+
+To get the LU factorization see `torch.lu`, which can be used with `torch.lu_solve` or `torch.lu_unpack`.
+
+`X = torch.solve(B, A).solution` should be replaced with `X = torch.linalg.solve(A, B)`.
