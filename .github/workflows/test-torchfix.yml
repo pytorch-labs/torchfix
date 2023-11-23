@@ -1,0 +1,27 @@
+name: Test TorchFix
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test-torchfix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install requirements
+        run: |
+          pip3 install -r requirements-dev.txt
+      - name: Install TorchFix
+        run: |
+          pip3 install .
+      - name: Run pytest
+        run: |
+          pytest tests
+      - name: Run flake8
+        run: |
+          flake8
+      - name: Run mypy
+        run: |
+          mypy .
