@@ -64,3 +64,6 @@ This function was deprecated since PyTorch version 1.9 and is now removed.
 To get the LU factorization see `torch.lu`, which can be used with `torch.lu_solve` or `torch.lu_unpack`.
 
 `X = torch.solve(B, A).solution` should be replaced with `X = torch.linalg.solve(A, B)`.
+
+## License
+TorchFix is BSD License licensed, as found in the LICENSE file.
