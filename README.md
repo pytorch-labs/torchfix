@@ -17,7 +17,7 @@ edges and many things can and will change.
 ## Installation
 
 To install the latest code from GitHub, clone/download
-https://github.com/pytorch/test-infra/tree/main/tools/torchfix and run `pip install .`
+https://github.com/pytorch-labs/torchfix and run `pip install .`
 inside the directory.
 
 To install a release version from PyPI, run `pip install torchfix`.
@@ -47,7 +47,7 @@ To enable them, use standard flake8 configuration options for the plugin mode or
 ## Reporting problems
 
 If you encounter a bug or some other problem with TorchFix, please file an issue on
-https://github.com/pytorch/test-infra/issues, mentioning [TorchFix] in the title.
+https://github.com/pytorch-labs/torchfix/issues.
 
 
 ## Rules
