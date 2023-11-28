@@ -1,7 +1,18 @@
 [project]
 name = "TorchFix"
+description = "TorchFix - a linter for PyTorch-using code with autofix support"
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python"
+]
 dynamic = ["version"]
 dependencies = ["flake8>=3.8.2", "PyYAML", "libcst>=1.1.0,<1.2.0"]
+
+[project.urls]
+Repository = "https://github.com/pytorch-labs/torchfix"
+"Bug Tracker" = "https://github.com/pytorch-labs/torchfix/issues"
 
 [project.scripts]
 torchfix = "torchfix.__main__:main"
