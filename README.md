@@ -1,5 +1,7 @@
 # TorchFix - a linter for PyTorch-using code with autofix support
 
+[![PyPI](https://img.shields.io/pypi/v/torchfix.svg)](https://pypi.org/project/torchfix/)
+
 TorchFix is a Python code static analysis tool - a linter with autofix capabilities -
 for users of PyTorch. It can be used to find and fix issues like usage of deprecated
 PyTorch functions and non-public symbols, and to adopt PyTorch best practices in general.
