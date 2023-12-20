@@ -11,7 +11,8 @@ from .visitors.deprecated_symbols import (
 )
 
 from .visitors.performance import TorchSynchronizedDataLoaderVisitor
-from .visitors.misc import TorchRequireGradVisitor
+from .visitors.misc import (TorchRequireGradVisitor, TorchReentrantCheckpointVisitor)
+
 from .visitors.vision import (
     TorchVisionDeprecatedPretrainedVisitor,
     TorchVisionDeprecatedToTensorVisitor,
@@ -33,6 +34,7 @@ def GET_ALL_VISITORS():
         TorchVisionDeprecatedPretrainedVisitor(),
         TorchVisionDeprecatedToTensorVisitor(),
         TorchUnsafeLoadVisitor(),
+        TorchReentrantCheckpointVisitor(),
     ]
 
 
