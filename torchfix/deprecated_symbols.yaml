@@ -60,6 +60,11 @@
   deprecate_pr: TBA
   remove_pr:
 
+- name: torch.nn.utils.weight_norm
+  deprecate_pr: https://github.com/pytorch/pytorch/pull/103001
+  remove_pr:
+  reference: https://github.com/pytorch-labs/torchfix#torchnnutilsweight_norm
+
 # functorch
 - name: functorch.vmap
   deprecate_pr: TBA

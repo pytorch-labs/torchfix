@@ -1,0 +1,1 @@
+2:5 TOR101 Use of deprecated function torch.nn.utils.weight_norm: https://github.com/pytorch-labs/torchfix#torchnnutilsweight_norm
