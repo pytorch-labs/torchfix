@@ -67,5 +67,27 @@ To get the LU factorization see `torch.lu`, which can be used with `torch.lu_sol
 
 `X = torch.solve(B, A).solution` should be replaced with `X = torch.linalg.solve(A, B)`.
 
+### TOR101 Use of deprecated function
+
+#### torch.nn.utils.weight_norm
+
+This function is deprecated. Use :func:`torch.nn.utils.parametrizations.weight_norm`
+which uses the modern parametrization API. The new ``weight_norm`` is compatible
+with ``state_dict`` generated from old ``weight_norm``.
+
+Migration guide:
+
+* The magnitude (``weight_g``) and direction (``weight_v``) are now expressed
+    as ``parametrizations.weight.original0`` and ``parametrizations.weight.original1``
+    respectively.
+
+* To remove the weight normalization reparametrization, use
+    `torch.nn.utils.parametrize.remove_parametrizations`.
+
+* The weight is no longer recomputed once at module forward; instead, it will
+    be recomputed on every access.  To restore the old behavior, use
+    `torch.nn.utils.parametrize.cached` before invoking the module
+    in question.
+
 ## License
 TorchFix is BSD License licensed, as found in the LICENSE file.
