@@ -67,6 +67,18 @@ To get the LU factorization see `torch.lu`, which can be used with `torch.lu_sol
 
 `X = torch.solve(B, A).solution` should be replaced with `X = torch.linalg.solve(A, B)`.
 
+### TOR002 Likely typo `require_grad` in assignment. Did you mean `requires_grad`?
+
+This is a common misspelling that can lead to silent performance issues.
+
+### TOR003 Please pass `use_reentrant` explicitly to `checkpoint`
+
+The default value of the `use_reentrant parameter` in `torch.utils.checkpoint` is being changed
+from `True` to `False`. In the meantime, the value needs to be passed explictly.
+
+See this [forum post](https://dev-discuss.pytorch.org/t/bc-breaking-update-to-torch-utils-checkpoint-not-passing-in-use-reentrant-flag-will-raise-an-error/1745)
+for details.
+
 ### TOR101 Use of deprecated function
 
 #### torch.nn.utils.weight_norm
