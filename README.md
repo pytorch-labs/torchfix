@@ -73,8 +73,8 @@ This is a common misspelling that can lead to silent performance issues.
 
 ### TOR003 Please pass `use_reentrant` explicitly to `checkpoint`
 
-The default value of the `use_reentrant parameter` in `torch.utils.checkpoint` is being changed
-from `True` to `False`. In the meantime, the value needs to be passed explictly.
+The default value of the `use_reentrant` parameter in `torch.utils.checkpoint` is being changed
+from `True` to `False`. In the meantime, the value needs to be passed explicitly.
 
 See this [forum post](https://dev-discuss.pytorch.org/t/bc-breaking-update-to-torch-utils-checkpoint-not-passing-in-use-reentrant-flag-will-raise-an-error/1745)
 for details.
