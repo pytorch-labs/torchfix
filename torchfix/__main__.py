@@ -5,7 +5,7 @@ import contextlib
 import sys
 import io
 
-from .torchfix import TorchCodemod, TorchCodemodConfig
+from .torchfix import TorchCodemod, TorchCodemodConfig, __version__ as TorchFixVersion
 from .common import CYAN, ENDC
 
 
@@ -14,7 +14,7 @@ def main() -> None:
 
     parser.add_argument(
         "path",
-        nargs="+",
+        nargs="*",
         help=("Path to check/fix. Can be a directory, a file, or multiple of either."),
     )
     parser.add_argument(
@@ -36,6 +36,11 @@ def main() -> None:
             "ALL",
         ],
     )
+    parser.add_argument(
+        "--version",
+        action="store_true",
+        help="Print current version.",
+    )
 
     # XXX TODO: Get rid of this!
     # Silence "Failed to determine module name"
@@ -46,6 +51,15 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+
+    if args.version:
+        # TODO: Perhaps add commit hash here if we can
+        print(f"{TorchFixVersion}")
+        sys.exit(0)
+
+    if not args.path:
+        parser.print_usage()
+        sys.exit(1)
 
     files = codemod.gather_files(args.path)
 
