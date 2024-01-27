@@ -15,7 +15,6 @@ def main() -> None:
     parser.add_argument(
         "path",
         nargs="*",
-        default=["."],
         help=("Path to check/fix. Can be a directory, a file, or multiple of either."),
     )
     parser.add_argument(
@@ -57,6 +56,10 @@ def main() -> None:
         # TODO: Perhaps add commit hash here if we can
         print(f"{TorchFixVersion}")
         sys.exit(0)
+
+    if not args.path:
+        parser.print_usage()
+        sys.exit(1)
 
     files = codemod.gather_files(args.path)
 
