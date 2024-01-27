@@ -14,7 +14,7 @@ def main() -> None:
 
     parser.add_argument(
         "path",
-        nargs="*",
+        nargs="+",
         help=("Path to check/fix. Can be a directory, a file, or multiple of either."),
     )
     parser.add_argument(
@@ -38,8 +38,8 @@ def main() -> None:
     )
     parser.add_argument(
         "--version",
-        action="store_true",
-        help="Print current version.",
+        action="version",
+        version=f"{TorchFixVersion}"
     )
 
     # XXX TODO: Get rid of this!
@@ -51,11 +51,6 @@ def main() -> None:
     )
 
     args = parser.parse_args()
-
-    if args.version:
-        # TODO: Perhaps add commit hash here if we can
-        print(f"{TorchFixVersion}")
-        sys.exit(0)
 
     if not args.path:
         parser.print_usage()
