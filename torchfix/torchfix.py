@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 import libcst as cst
 import libcst.codemod as codemod
 
@@ -25,18 +25,55 @@ DEPRECATED_CONFIG_PATH = Path(__file__).absolute().parent / "deprecated_symbols.
 
 DISABLED_BY_DEFAULT = ["TOR3", "TOR4"]
 
+ALL_VISITOR_CLS = [
+    TorchDeprecatedSymbolsVisitor,
+    TorchRequireGradVisitor,
+    TorchSynchronizedDataLoaderVisitor,
+    TorchVisionDeprecatedPretrainedVisitor,
+    TorchVisionDeprecatedToTensorVisitor,
+    TorchUnsafeLoadVisitor,
+    TorchReentrantCheckpointVisitor,
+]
+
+_ALL_ERROR_CODES = None
+
+def GET_ALL_ERROR_CODES():
+    global _ALL_ERROR_CODES
+    if _ALL_ERROR_CODES is None:
+        codes = []
+        for cls in ALL_VISITOR_CLS:
+            if isinstance(cls.ERROR_CODE, list):
+                codes += cls.ERROR_CODE
+            else:
+                codes.append(cls.ERROR_CODE)
+        _ALL_ERROR_CODES = codes
+    return _ALL_ERROR_CODES
 
 def GET_ALL_VISITORS():
-    return [
-        TorchDeprecatedSymbolsVisitor(DEPRECATED_CONFIG_PATH),
-        TorchRequireGradVisitor(),
-        TorchSynchronizedDataLoaderVisitor(),
-        TorchVisionDeprecatedPretrainedVisitor(),
-        TorchVisionDeprecatedToTensorVisitor(),
-        TorchUnsafeLoadVisitor(),
-        TorchReentrantCheckpointVisitor(),
-    ]
+    out = []
+    for v in ALL_VISITOR_CLS:
+        if v is TorchDeprecatedSymbolsVisitor:
+            out.append(v(DEPRECATED_CONFIG_PATH))
+        else:
+            out.append(v())
+    return out
 
+def get_visitor_with_error_code(error_code):
+    # Each error code can only correspond to one visitor
+    for visitor in GET_ALL_VISITORS():
+        if isinstance(visitor.ERROR_CODE, list):
+            if error_code in visitor.ERROR_CODE:
+                return visitor
+        else:
+            if error_code == visitor.ERROR_CODE:
+                return visitor
+    assert False, f"Unknown error code: {error_code}"
+
+def get_visitors_with_error_codes(error_codes):
+    visitors = []
+    for error_code in error_codes:
+        visitors.append(get_visitor_with_error_code(error_code))
+    return visitors
 
 # Flake8 plugin
 class TorchChecker:
@@ -78,7 +115,7 @@ class TorchChecker:
 # Standalone torchfix command
 @dataclass
 class TorchCodemodConfig:
-    select: Optional[str] = None
+    select: Optional[List[str]] = None
 
 
 class TorchCodemod(codemod.Codemod):
@@ -97,8 +134,8 @@ class TorchCodemod(codemod.Codemod):
         # in that case we would need to use `wrapped_module.module`
         # instead of `module`.
         wrapped_module = cst.MetadataWrapper(module, unsafe_skip_copy=True)
+        visitors = get_visitors_with_error_codes(self.config.select)
 
-        visitors = GET_ALL_VISITORS()
         violations = []
         needed_imports = []
         wrapped_module.visit_batched(visitors)
@@ -110,12 +147,13 @@ class TorchCodemod(codemod.Codemod):
         replacement_map = {}
         assert self.context.filename is not None
         for violation in violations:
-            skip_violation = False
-            if self.config is None or self.config.select != "ALL":
-                for disabled_code in DISABLED_BY_DEFAULT:
-                    if violation.error_code.startswith(disabled_code):
-                        skip_violation = True
-                        break
+            # Still need to skip violations here, since a single visitor can
+            # correspond to multiple different types of violations.
+            skip_violation = True
+            for code in self.config.select:
+                if violation.error_code.startswith(code):
+                    skip_violation = False
+                    break
             if skip_violation:
                 continue
 

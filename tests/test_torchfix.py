@@ -4,6 +4,7 @@ from torchfix.torchfix import (
     TorchCodemod,
     TorchCodemodConfig,
     GET_ALL_VISITORS,
+    GET_ALL_ERROR_CODES,
 )
 import logging
 import libcst.codemod as codemod
@@ -20,7 +21,7 @@ def _checker_results(s):
 def _codemod_results(source_path):
     with open(source_path) as source:
         code = source.read()
-    config = TorchCodemodConfig(select="ALL")
+    config = TorchCodemodConfig(select=GET_ALL_ERROR_CODES())
     context = TorchCodemod(codemod.CodemodContext(filename=source_path), config)
     new_module = codemod.transform_module(context, code)
     return new_module.code
