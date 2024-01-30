@@ -43,7 +43,7 @@ class TorchVisionDeprecatedToTensorVisitor(TorchVisitor):
 
     def visit_Attribute(self, node):
         qualified_names = self.get_metadata(cst.metadata.QualifiedNameProvider, node)
-        if not len(qualified_names) == 1:
+        if len(qualified_names) != 1:
             return
 
         self._maybe_add_violation(qualified_names.pop().name, node)

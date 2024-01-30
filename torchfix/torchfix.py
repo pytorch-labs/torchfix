@@ -37,6 +37,7 @@ ALL_VISITOR_CLS = [
 
 _ALL_ERROR_CODES = None
 
+
 def GET_ALL_ERROR_CODES():
     global _ALL_ERROR_CODES
     if _ALL_ERROR_CODES is None:
@@ -49,6 +50,7 @@ def GET_ALL_ERROR_CODES():
         _ALL_ERROR_CODES = codes
     return _ALL_ERROR_CODES
 
+
 def GET_ALL_VISITORS():
     out = []
     for v in ALL_VISITOR_CLS:
@@ -57,6 +59,7 @@ def GET_ALL_VISITORS():
         else:
             out.append(v())
     return out
+
 
 def get_visitor_with_error_code(error_code):
     # Each error code can only correspond to one visitor
@@ -67,13 +70,15 @@ def get_visitor_with_error_code(error_code):
         else:
             if error_code == visitor.ERROR_CODE:
                 return visitor
-    assert False, f"Unknown error code: {error_code}"
+    raise AssertionError(f"Unknown error code: {error_code}")
+
 
 def get_visitors_with_error_codes(error_codes):
     visitors = []
     for error_code in error_codes:
         visitors.append(get_visitor_with_error_code(error_code))
     return visitors
+
 
 # Flake8 plugin
 class TorchChecker:
@@ -134,6 +139,8 @@ class TorchCodemod(codemod.Codemod):
         # in that case we would need to use `wrapped_module.module`
         # instead of `module`.
         wrapped_module = cst.MetadataWrapper(module, unsafe_skip_copy=True)
+        if self.config is None or self.config.select is None:
+            raise AssertionError("Expected self.config.select to be set")
         visitors = get_visitors_with_error_codes(self.config.select)
 
         violations = []

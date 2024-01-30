@@ -15,16 +15,20 @@ from .torchfix import (
 )
 from .common import CYAN, ENDC
 
+
 def process_error_code_str(code_str):
     if code_str is None:
-        return [code for code in GET_ALL_ERROR_CODES() if code not in DISABLED_BY_DEFAULT]
+        return [code for code in GET_ALL_ERROR_CODES()
+                if code not in DISABLED_BY_DEFAULT]
     codes = [s.strip() for s in code_str.split(",")]
     if "ALL" in codes:
         return GET_ALL_ERROR_CODES()
     for code in codes:
         if code not in GET_ALL_ERROR_CODES():
-            raise ValueError(f"Invalid error code: {code}, available error codes: {GET_ALL_ERROR_CODES()}")
+            raise ValueError(f"Invalid error code: {code}, available error "
+                             f"codes: {GET_ALL_ERROR_CODES()}")
     return codes
+
 
 # Should get rid of this code eventually.
 @contextlib.contextmanager
