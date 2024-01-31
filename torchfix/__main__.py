@@ -12,7 +12,7 @@ from .common import CYAN, ENDC
 
 # Should get rid of this code eventually.
 @contextlib.contextmanager
-def StderrSilencer(redirect: bool = True) -> None:
+def StderrSilencer(redirect: bool = True):
     if not redirect:
         yield
     elif sys.platform != "darwin":
