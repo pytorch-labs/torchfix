@@ -2,11 +2,35 @@ import argparse
 import libcst.codemod as codemod
 
 import contextlib
+import ctypes
 import sys
 import io
 
 from .torchfix import TorchCodemod, TorchCodemodConfig, __version__ as TorchFixVersion
 from .common import CYAN, ENDC
+
+
+# Should get rid of this code eventually.
+@contextlib.contextmanager
+def StderrSilencer(redirect: bool = True):
+    if not redirect:
+        yield
+    elif sys.platform != "darwin":
+        with contextlib.redirect_stderr(io.StringIO()):
+            yield
+    else:
+        # redirect_stderr does not work for some reason
+        # Workaround it by using good old dup2 to redirect
+        # stderr to /dev/null
+        libc = ctypes.CDLL("libc.dylib")
+        orig_stderr = libc.dup(2)
+        with open("/dev/null", "w") as f:
+            libc.dup2(f.fileno(), 2)
+        try:
+            yield
+        finally:
+            libc.dup2(orig_stderr, 2)
+            libc.close(orig_stderr)
 
 
 def main() -> None:
@@ -74,12 +98,7 @@ def main() -> None:
     command_instance = TorchCodemod(codemod.CodemodContext(), config)
     DIFF_CONTEXT = 5
     try:
-        if not args.show_stderr:
-            context = contextlib.redirect_stderr(io.StringIO())
-        else:
-            # Should get rid of this code eventually.
-            context = contextlib.nullcontext()  # type: ignore
-        with context:
+        with StderrSilencer(not args.show_stderr):
             result = codemod.parallel_exec_transform_with_prettyprint(
                 command_instance,
                 torch_files,
