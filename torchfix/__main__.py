@@ -11,23 +11,33 @@ from .torchfix import (
     TorchCodemodConfig,
     __version__ as TorchFixVersion,
     DISABLED_BY_DEFAULT,
+    expand_error_codes,
     GET_ALL_ERROR_CODES,
 )
 from .common import CYAN, ENDC
 
 
 def process_error_code_str(code_str):
+    # Allow duplicates in the input string, e.g. --select ALL,TOR0,TOR001.
+    # We deduplicate them here.
+
+    # Default when --select is not provided.
     if code_str is None:
-        return [code for code in GET_ALL_ERROR_CODES()
-                if code not in DISABLED_BY_DEFAULT]
-    codes = [s.strip() for s in code_str.split(",")]
-    if "ALL" in codes:
-        return GET_ALL_ERROR_CODES()
-    for code in codes:
-        if code not in GET_ALL_ERROR_CODES():
-            raise ValueError(f"Invalid error code: {code}, available error "
-                             f"codes: {GET_ALL_ERROR_CODES()}")
-    return codes
+        exclude_set = expand_error_codes(tuple(DISABLED_BY_DEFAULT))
+        return list(GET_ALL_ERROR_CODES() - exclude_set)
+
+    raw_codes = [s.strip() for s in code_str.split(",")]
+
+    # Validate error codes
+    for c in raw_codes:
+        if len(expand_error_codes((c,))) == 0:
+            raise ValueError(f"Invalid error code: {c}, available error "
+                             f"codes: {list(GET_ALL_ERROR_CODES())}")
+
+    if "ALL" in raw_codes:
+        return list(GET_ALL_ERROR_CODES())
+
+    return list(expand_error_codes(raw_codes))
 
 
 # Should get rid of this code eventually.
@@ -76,7 +86,7 @@ def main() -> None:
     parser.add_argument(
         "--select",
         help=f"Comma-separated list of rules to enable or 'ALL' to enable all rules. "
-             f"Available rules: {', '.join(GET_ALL_ERROR_CODES())}. "
+             f"Available rules: {', '.join(list(GET_ALL_ERROR_CODES()))}. "
              f"Defaults to all except for {', '.join(DISABLED_BY_DEFAULT)}.",
         type=str,
         default=None,

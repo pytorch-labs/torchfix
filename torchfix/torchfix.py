@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import functools
 from pathlib import Path
 from typing import Optional, List
 import libcst as cst
@@ -35,49 +36,65 @@ ALL_VISITOR_CLS = [
     TorchReentrantCheckpointVisitor,
 ]
 
-_ALL_ERROR_CODES = None
 
-
+@functools.cache
 def GET_ALL_ERROR_CODES():
-    global _ALL_ERROR_CODES
-    if _ALL_ERROR_CODES is None:
-        codes = []
-        for cls in ALL_VISITOR_CLS:
-            if isinstance(cls.ERROR_CODE, list):
-                codes += cls.ERROR_CODE
-            else:
-                codes.append(cls.ERROR_CODE)
-        _ALL_ERROR_CODES = codes
-    return _ALL_ERROR_CODES
+    codes = set()
+    for cls in ALL_VISITOR_CLS:
+        if isinstance(cls.ERROR_CODE, list):
+            codes |= set(cls.ERROR_CODE)
+        else:
+            codes.add(cls.ERROR_CODE)
+    return codes
+
+
+@functools.cache
+def expand_error_codes(codes):
+    out_codes = set()
+    for c_a in codes:
+        for c_b in GET_ALL_ERROR_CODES():
+            if c_b.startswith(c_a):
+                out_codes.add(c_b)
+    return out_codes
+
+
+def construct_visitor(cls):
+    if cls is TorchDeprecatedSymbolsVisitor:
+        return cls(DEPRECATED_CONFIG_PATH)
+    else:
+        return cls()
 
 
 def GET_ALL_VISITORS():
     out = []
     for v in ALL_VISITOR_CLS:
-        if v is TorchDeprecatedSymbolsVisitor:
-            out.append(v(DEPRECATED_CONFIG_PATH))
-        else:
-            out.append(v())
+        out.append(construct_visitor(v))
     return out
 
 
-def get_visitor_with_error_code(error_code):
-    # Each error code can only correspond to one visitor
-    for visitor in GET_ALL_VISITORS():
-        if isinstance(visitor.ERROR_CODE, list):
-            if error_code in visitor.ERROR_CODE:
-                return visitor
-        else:
-            if error_code == visitor.ERROR_CODE:
-                return visitor
-    raise AssertionError(f"Unknown error code: {error_code}")
-
-
 def get_visitors_with_error_codes(error_codes):
-    visitors = []
+    visitor_classes = set()
     for error_code in error_codes:
-        visitors.append(get_visitor_with_error_code(error_code))
-    return visitors
+        # Assume the error codes have been expanded so each error code can
+        # only correspond to one visitor.
+        found = False
+        for visitor_cls in ALL_VISITOR_CLS:
+            if isinstance(visitor_cls.ERROR_CODE, list):
+                if error_code in visitor_cls.ERROR_CODE:
+                    visitor_classes.add(visitor_cls)
+                    found = True
+                    break
+            else:
+                if error_code == visitor_cls.ERROR_CODE:
+                    visitor_classes.add(visitor_cls)
+                    found = True
+                    break
+        if not found:
+            raise AssertionError(f"Unknown error code: {error_code}")
+    out = []
+    for cls in visitor_classes:
+        out.append(construct_visitor(cls))
+    return out
 
 
 # Flake8 plugin
