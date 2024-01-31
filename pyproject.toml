@@ -1,5 +1,6 @@
 [project]
 name = "TorchFix"
+requires-python = ">=3.9"
 description = "TorchFix - a linter for PyTorch-using code with autofix support"
 readme = "README.md"
 license = {file = "LICENSE"}
