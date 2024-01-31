@@ -1,44 +1,36 @@
 import argparse
 import libcst.codemod as codemod
 
-import ctypes
 import contextlib
+import ctypes
 import sys
 import io
-from ctypes import CDLL
 
 from .torchfix import TorchCodemod, TorchCodemodConfig, __version__ as TorchFixVersion
 from .common import CYAN, ENDC
 
 
 # Should get rid of this code eventually.
-class StderrSilencer:
-    def __init__(self, redirect:bool = True) -> None:
-        self.redirect = redirect
-        self.context = contextlib.redirect_stderr(io.StringIO())
-        if sys.platform == "darwin":
-            self.libc = CDLL("libc.dylib")
-            self.devnull = open("/dev/null", "w")
-
-    def __enter__(self) -> None:
-        if not self.redirect: return
-        if sys.platform == "darwin":
-            # redirect_stderr does not work for some reason
-            # Workaround it by using good old dup2 to redirect
-            # stderr to /dev/null
-            self.orig_stderr = self.libc.dup(2)
-            self.libc.dup2(self.devnull.fileno(), 2)
-        else:
-            self.context.__enter__()
-
-    def __exit__(self) -> None:
-        if not self.redirect:
-            return
-        if sys.platform == "darwin":
-            self.libc.dup2(self.orig_stderr, 2)
-            self.libc.close(self.orig_stderr)
-        else:
-            self.context.__exit__()
+@contextlib.contextmanager
+def StderrSilencer(redirect: bool = True) -> None:
+    if not redirect:
+        yield
+    elif sys.platform != "darwin":
+        with contextlib.redirect_stderr(io.StringIO()):
+            yield
+    else:
+        # redirect_stderr does not work for some reason
+        # Workaround it by using good old dup2 to redirect
+        # stderr to /dev/null
+        libc = ctypes.CDLL("libc.dylib")
+        orig_stderr = libc.dup(2)
+        with open("/dev/null", "w") as f:
+            libc.dup2(f.fileno(), 2)
+        try:
+            yield
+        finally:
+            libc.dup2(orig_stderr, 2)
+            libc.close(orig_stderr)
 
 
 def main() -> None:
