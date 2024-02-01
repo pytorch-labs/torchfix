@@ -102,7 +102,7 @@ def main() -> None:
                     break
 
     config = TorchCodemodConfig()
-    config.select = process_error_code_str(args.select)
+    config.select = list(process_error_code_str(args.select))
     command_instance = TorchCodemod(codemod.CodemodContext(), config)
     DIFF_CONTEXT = 5
     try:

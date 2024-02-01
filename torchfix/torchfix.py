@@ -104,7 +104,7 @@ def process_error_code_str(code_str):
     # Default when --select is not provided.
     if code_str is None:
         exclude_set = expand_error_codes(tuple(DISABLED_BY_DEFAULT))
-        return list(GET_ALL_ERROR_CODES() - exclude_set)
+        return GET_ALL_ERROR_CODES() - exclude_set
 
     raw_codes = [s.strip() for s in code_str.split(",")]
 
@@ -117,9 +117,9 @@ def process_error_code_str(code_str):
                              f"codes: {list(GET_ALL_ERROR_CODES())}")
 
     if "ALL" in raw_codes:
-        return list(GET_ALL_ERROR_CODES())
+        return GET_ALL_ERROR_CODES()
 
-    return list(expand_error_codes(tuple(raw_codes)))
+    return expand_error_codes(tuple(raw_codes))
 
 
 # Flake8 plugin
