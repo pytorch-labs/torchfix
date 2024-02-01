@@ -11,33 +11,10 @@ from .torchfix import (
     TorchCodemodConfig,
     __version__ as TorchFixVersion,
     DISABLED_BY_DEFAULT,
-    expand_error_codes,
     GET_ALL_ERROR_CODES,
+    process_error_code_str,
 )
 from .common import CYAN, ENDC
-
-
-def process_error_code_str(code_str):
-    # Allow duplicates in the input string, e.g. --select ALL,TOR0,TOR001.
-    # We deduplicate them here.
-
-    # Default when --select is not provided.
-    if code_str is None:
-        exclude_set = expand_error_codes(tuple(DISABLED_BY_DEFAULT))
-        return list(GET_ALL_ERROR_CODES() - exclude_set)
-
-    raw_codes = [s.strip() for s in code_str.split(",")]
-
-    # Validate error codes
-    for c in raw_codes:
-        if len(expand_error_codes((c,))) == 0:
-            raise ValueError(f"Invalid error code: {c}, available error "
-                             f"codes: {list(GET_ALL_ERROR_CODES())}")
-
-    if "ALL" in raw_codes:
-        return list(GET_ALL_ERROR_CODES())
-
-    return list(expand_error_codes(raw_codes))
 
 
 # Should get rid of this code eventually.

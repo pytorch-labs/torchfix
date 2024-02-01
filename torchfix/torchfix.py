@@ -97,6 +97,31 @@ def get_visitors_with_error_codes(error_codes):
     return out
 
 
+def process_error_code_str(code_str):
+    # Allow duplicates in the input string, e.g. --select ALL,TOR0,TOR001.
+    # We deduplicate them here.
+
+    # Default when --select is not provided.
+    if code_str is None:
+        exclude_set = expand_error_codes(tuple(DISABLED_BY_DEFAULT))
+        return list(GET_ALL_ERROR_CODES() - exclude_set)
+
+    raw_codes = [s.strip() for s in code_str.split(",")]
+
+    # Validate error codes
+    for c in raw_codes:
+        if c == "ALL":
+            continue
+        if len(expand_error_codes((c,))) == 0:
+            raise ValueError(f"Invalid error code: {c}, available error "
+                             f"codes: {list(GET_ALL_ERROR_CODES())}")
+
+    if "ALL" in raw_codes:
+        return list(GET_ALL_ERROR_CODES())
+
+    return list(expand_error_codes(tuple(raw_codes)))
+
+
 # Flake8 plugin
 class TorchChecker:
     name = "TorchFix"
