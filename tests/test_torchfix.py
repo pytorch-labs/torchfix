@@ -69,12 +69,12 @@ def test_errorcodes_distinct():
 def test_parse_error_code_str():
     exclude_set = expand_error_codes(tuple(DISABLED_BY_DEFAULT))
     cases = [
-        ("ALL", list(GET_ALL_ERROR_CODES())),
-        ("ALL,TOR102", list(GET_ALL_ERROR_CODES())),
-        ("TOR102", ["TOR102"]),
-        ("TOR102,TOR101", ["TOR102", "TOR101"]),
-        ("TOR1,TOR102", ["TOR102", "TOR101"]),
-        (None, list(GET_ALL_ERROR_CODES() - exclude_set)),
+        ("ALL", GET_ALL_ERROR_CODES()),
+        ("ALL,TOR102", GET_ALL_ERROR_CODES()),
+        ("TOR102", set(["TOR102"])),
+        ("TOR102,TOR101", set(["TOR102", "TOR101"])),
+        ("TOR1,TOR102", set(["TOR102", "TOR101"])),
+        (None, GET_ALL_ERROR_CODES() - exclude_set),
     ]
     for case, expected in cases:
-        assert expected == process_error_code_str(case)
+        assert expected == set(process_error_code_str(case))
