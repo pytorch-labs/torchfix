@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+import functools
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 import libcst as cst
 import libcst.codemod as codemod
 
@@ -25,17 +26,100 @@ DEPRECATED_CONFIG_PATH = Path(__file__).absolute().parent / "deprecated_symbols.
 
 DISABLED_BY_DEFAULT = ["TOR3", "TOR4"]
 
+ALL_VISITOR_CLS = [
+    TorchDeprecatedSymbolsVisitor,
+    TorchRequireGradVisitor,
+    TorchSynchronizedDataLoaderVisitor,
+    TorchVisionDeprecatedPretrainedVisitor,
+    TorchVisionDeprecatedToTensorVisitor,
+    TorchUnsafeLoadVisitor,
+    TorchReentrantCheckpointVisitor,
+]
+
+
+@functools.cache
+def GET_ALL_ERROR_CODES():
+    codes = set()
+    for cls in ALL_VISITOR_CLS:
+        if isinstance(cls.ERROR_CODE, list):
+            codes |= set(cls.ERROR_CODE)
+        else:
+            codes.add(cls.ERROR_CODE)
+    return codes
+
+
+@functools.cache
+def expand_error_codes(codes):
+    out_codes = set()
+    for c_a in codes:
+        for c_b in GET_ALL_ERROR_CODES():
+            if c_b.startswith(c_a):
+                out_codes.add(c_b)
+    return out_codes
+
+
+def construct_visitor(cls):
+    if cls is TorchDeprecatedSymbolsVisitor:
+        return cls(DEPRECATED_CONFIG_PATH)
+    else:
+        return cls()
+
 
 def GET_ALL_VISITORS():
-    return [
-        TorchDeprecatedSymbolsVisitor(DEPRECATED_CONFIG_PATH),
-        TorchRequireGradVisitor(),
-        TorchSynchronizedDataLoaderVisitor(),
-        TorchVisionDeprecatedPretrainedVisitor(),
-        TorchVisionDeprecatedToTensorVisitor(),
-        TorchUnsafeLoadVisitor(),
-        TorchReentrantCheckpointVisitor(),
-    ]
+    out = []
+    for v in ALL_VISITOR_CLS:
+        out.append(construct_visitor(v))
+    return out
+
+
+def get_visitors_with_error_codes(error_codes):
+    visitor_classes = set()
+    for error_code in error_codes:
+        # Assume the error codes have been expanded so each error code can
+        # only correspond to one visitor.
+        found = False
+        for visitor_cls in ALL_VISITOR_CLS:
+            if isinstance(visitor_cls.ERROR_CODE, list):
+                if error_code in visitor_cls.ERROR_CODE:
+                    visitor_classes.add(visitor_cls)
+                    found = True
+                    break
+            else:
+                if error_code == visitor_cls.ERROR_CODE:
+                    visitor_classes.add(visitor_cls)
+                    found = True
+                    break
+        if not found:
+            raise AssertionError(f"Unknown error code: {error_code}")
+    out = []
+    for cls in visitor_classes:
+        out.append(construct_visitor(cls))
+    return out
+
+
+def process_error_code_str(code_str):
+    # Allow duplicates in the input string, e.g. --select ALL,TOR0,TOR001.
+    # We deduplicate them here.
+
+    # Default when --select is not provided.
+    if code_str is None:
+        exclude_set = expand_error_codes(tuple(DISABLED_BY_DEFAULT))
+        return GET_ALL_ERROR_CODES() - exclude_set
+
+    raw_codes = [s.strip() for s in code_str.split(",")]
+
+    # Validate error codes
+    for c in raw_codes:
+        if c == "ALL":
+            continue
+        if len(expand_error_codes((c,))) == 0:
+            raise ValueError(f"Invalid error code: {c}, available error "
+                             f"codes: {list(GET_ALL_ERROR_CODES())}")
+
+    if "ALL" in raw_codes:
+        return GET_ALL_ERROR_CODES()
+
+    return expand_error_codes(tuple(raw_codes))
 
 
 # Flake8 plugin
@@ -78,7 +162,7 @@ class TorchChecker:
 # Standalone torchfix command
 @dataclass
 class TorchCodemodConfig:
-    select: Optional[str] = None
+    select: Optional[List[str]] = None
 
 
 class TorchCodemod(codemod.Codemod):
@@ -97,8 +181,10 @@ class TorchCodemod(codemod.Codemod):
         # in that case we would need to use `wrapped_module.module`
         # instead of `module`.
         wrapped_module = cst.MetadataWrapper(module, unsafe_skip_copy=True)
+        if self.config is None or self.config.select is None:
+            raise AssertionError("Expected self.config.select to be set")
+        visitors = get_visitors_with_error_codes(self.config.select)
 
-        visitors = GET_ALL_VISITORS()
         violations = []
         needed_imports = []
         wrapped_module.visit_batched(visitors)
@@ -110,12 +196,13 @@ class TorchCodemod(codemod.Codemod):
         replacement_map = {}
         assert self.context.filename is not None
         for violation in violations:
-            skip_violation = False
-            if self.config is None or self.config.select != "ALL":
-                for disabled_code in DISABLED_BY_DEFAULT:
-                    if violation.error_code.startswith(disabled_code):
-                        skip_violation = True
-                        break
+            # Still need to skip violations here, since a single visitor can
+            # correspond to multiple different types of violations.
+            skip_violation = True
+            for code in self.config.select:
+                if violation.error_code.startswith(code):
+                    skip_violation = False
+                    break
             if skip_violation:
                 continue
 

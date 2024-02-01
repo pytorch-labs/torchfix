@@ -3,7 +3,11 @@ from torchfix.torchfix import (
     TorchChecker,
     TorchCodemod,
     TorchCodemodConfig,
+    DISABLED_BY_DEFAULT,
+    expand_error_codes,
     GET_ALL_VISITORS,
+    GET_ALL_ERROR_CODES,
+    process_error_code_str,
 )
 import logging
 import libcst.codemod as codemod
@@ -20,7 +24,7 @@ def _checker_results(s):
 def _codemod_results(source_path):
     with open(source_path) as source:
         code = source.read()
-    config = TorchCodemodConfig(select="ALL")
+    config = TorchCodemodConfig(select=list(GET_ALL_ERROR_CODES()))
     context = TorchCodemod(codemod.CodemodContext(filename=source_path), config)
     new_module = codemod.transform_module(context, code)
     return new_module.code
@@ -60,3 +64,17 @@ def test_errorcodes_distinct():
         for e in error_code if isinstance(error_code, list) else [error_code]:
             assert e not in seen
             seen.add(e)
+
+
+def test_parse_error_code_str():
+    exclude_set = expand_error_codes(tuple(DISABLED_BY_DEFAULT))
+    cases = [
+        ("ALL", GET_ALL_ERROR_CODES()),
+        ("ALL,TOR102", GET_ALL_ERROR_CODES()),
+        ("TOR102", {"TOR102"}),
+        ("TOR102,TOR101", {"TOR102", "TOR101"}),
+        ("TOR1,TOR102", {"TOR102", "TOR101"}),
+        (None, GET_ALL_ERROR_CODES() - exclude_set),
+    ]
+    for case, expected in cases:
+        assert expected == process_error_code_str(case)

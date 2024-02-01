@@ -6,7 +6,14 @@ import ctypes
 import sys
 import io
 
-from .torchfix import TorchCodemod, TorchCodemodConfig, __version__ as TorchFixVersion
+from .torchfix import (
+    TorchCodemod,
+    TorchCodemodConfig,
+    __version__ as TorchFixVersion,
+    DISABLED_BY_DEFAULT,
+    GET_ALL_ERROR_CODES,
+    process_error_code_str,
+)
 from .common import CYAN, ENDC
 
 
@@ -55,10 +62,11 @@ def main() -> None:
     )
     parser.add_argument(
         "--select",
-        help="ALL to enable rules disabled by default",
-        choices=[
-            "ALL",
-        ],
+        help=f"Comma-separated list of rules to enable or 'ALL' to enable all rules. "
+             f"Available rules: {', '.join(list(GET_ALL_ERROR_CODES()))}. "
+             f"Defaults to all except for {', '.join(DISABLED_BY_DEFAULT)}.",
+        type=str,
+        default=None,
     )
     parser.add_argument(
         "--version",
@@ -94,7 +102,7 @@ def main() -> None:
                     break
 
     config = TorchCodemodConfig()
-    config.select = args.select
+    config.select = list(process_error_code_str(args.select))
     command_instance = TorchCodemod(codemod.CodemodContext(), config)
     DIFF_CONTEXT = 5
     try:
