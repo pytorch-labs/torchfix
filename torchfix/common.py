@@ -3,7 +3,7 @@ import sys
 import libcst as cst
 from libcst.metadata import QualifiedNameProvider, WhitespaceInclusivePositionProvider
 from libcst.codemod.visitors import ImportItem
-from typing import Optional, List, Set, Union
+from typing import Optional, List, Set, Tuple, Union
 from abc import ABC
 
 IS_TTY = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
@@ -83,19 +83,34 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
 
 def call_with_name_changes(
     node: cst.Call, old_qualified_name: str, new_qualified_name: str
-) -> Optional[cst.Call]:
+) -> Optional[Tuple[cst.Call, Set[ImportItem]]]:
     """
-    Return new `Call` node with name changes.
+    Return an optional tuple:
+    new `Call` node with name changes
+    and a set of newly needed imports.
     """
     old_begin, _, old_last = old_qualified_name.rpartition(".")
     new_begin, _, new_last = new_qualified_name.rpartition(".")
+    needed_imports: Set[ImportItem] = set()
 
     # If the only difference is the last name part.
     if old_begin == new_begin:
-        replacement = node.with_deep_changes(
-            old_node=cst.ensure_type(node.func, cst.Attribute).attr,
-            value=new_last,
-        )
+        if isinstance(node.func, cst.Attribute):
+            replacement = node.with_deep_changes(
+                old_node=node.func.attr,
+                value=new_last,
+            )
+        elif isinstance(node.func, cst.Name):
+            replacement = node.with_deep_changes(
+                old_node=node.func,
+                value=new_last,
+            )
+            needed_imports.add(
+                ImportItem(
+                    module_name=new_begin,
+                    obj_name=new_last,
+                )
+            )
 
     # If the last name part is the same and
     # originally called without a dot: don't change the call site,
@@ -106,7 +121,10 @@ def call_with_name_changes(
     # Replace with new_qualified_name.
     else:
         replacement = node.with_changes(func=cst.parse_expression(new_qualified_name))
-    return replacement
+    if replacement is None:
+        return None
+    else:
+        return replacement, needed_imports
 
 
 def deep_multi_replace(tree, replacement_map):
