@@ -49,10 +49,12 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
                 qualified_name, {}
             ).get("replacement", "")
             if function_name_replacement:
-                replacement = call_with_name_changes(
+                replacement_and_imports = call_with_name_changes(
                     node, qualified_name, function_name_replacement
                 )
-
+                if replacement_and_imports is not None:
+                    replacement, imports = replacement_and_imports
+                    self.needed_imports.update(imports)
         return replacement
 
     def visit_Call(self, node):

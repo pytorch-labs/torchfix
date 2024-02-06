@@ -1,6 +1,9 @@
 import torch
+from torch import ger
 deprecated = torch.norm()
 sinusoid_inp = torch.ger(pos_seq, inv_freq)
 other = something.ger(pos_seq, inv_freq)
 deprecated = torch.norm()
 one_more = torch.ger(pos_seq, inv_freq)
+
+just_name = ger(pos_seq, inv_freq)
