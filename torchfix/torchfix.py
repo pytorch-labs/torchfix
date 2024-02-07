@@ -22,7 +22,7 @@ from .visitors.vision import (
 )
 from .visitors.security import TorchUnsafeLoadVisitor
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 DEPRECATED_CONFIG_PATH = Path(__file__).absolute().parent / "deprecated_symbols.yaml"
 
