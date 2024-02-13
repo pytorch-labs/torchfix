@@ -21,6 +21,7 @@ from .visitors.vision import (
     TorchVisionDeprecatedToTensorVisitor,
 )
 from .visitors.security import TorchUnsafeLoadVisitor
+from .visitors.private_symbols import TorchPrivateSymbolsVisitor
 
 __version__ = "0.4.0"
 
@@ -37,6 +38,7 @@ ALL_VISITOR_CLS = [
     TorchVisionDeprecatedToTensorVisitor,
     TorchUnsafeLoadVisitor,
     TorchReentrantCheckpointVisitor,
+    TorchPrivateSymbolsVisitor,
 ]
 
 
