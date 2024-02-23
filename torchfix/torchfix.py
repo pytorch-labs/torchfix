@@ -9,6 +9,7 @@ from .common import deep_multi_replace
 from .visitors.deprecated_symbols import (
     TorchDeprecatedSymbolsVisitor,
     _UpdateFunctorchImports,
+    _UpdateTorchvisionModelsImports,
 )
 
 from .visitors.internal import TorchScopedLibraryVisitor
@@ -229,7 +230,11 @@ class TorchCodemod(codemod.Codemod):
         update_functorch_imports_visitor = _UpdateFunctorchImports()
         new_module = new_module.visit(update_functorch_imports_visitor)
 
-        if fixes_count == 0 and not update_functorch_imports_visitor.changed:
+        update_torchvision_models_visitor = _UpdateTorchvisionModelsImports()
+        new_module = new_module.visit(update_torchvision_models_visitor)
+
+        if fixes_count == 0 and not update_functorch_imports_visitor.changed \
+            and not update_torchvision_models_visitor.changed:
             raise codemod.SkipFile("No changes")
 
         return new_module
