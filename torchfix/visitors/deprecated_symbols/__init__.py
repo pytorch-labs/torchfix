@@ -117,28 +117,3 @@ class _UpdateFunctorchImports(cst.CSTTransformer):
             self.changed = True
             return updated_node.with_changes(module=cst.parse_expression("torch.func"))
         return updated_node
-
-# TODO: refactor/generalize this.
-class _UpdateTorchvisionModelsImports(cst.CSTTransformer):
-
-    def __init__(self):
-        self.changed = False
-
-    def leave_Import(
-        self, node: cst.Import, updated_node: cst.Import
-    ) -> cst.CSTNode:
-        if len(updated_node.names) == 1:
-            alias = updated_node.names[0]
-            if isinstance(alias.name, cst.Attribute) and \
-               alias.name.value.value == 'torchvision' and \
-               alias.name.attr.value == 'models' and \
-               alias.asname and alias.asname.name.value == 'models':
-
-                self.changed = True
-                new_import = cst.ImportFrom(
-                    module=cst.Name(value='torchvision'),
-                    names=[cst.ImportAlias(name=cst.Name(value='models'))]
-                )
-                return new_import
-
-        return updated_node
