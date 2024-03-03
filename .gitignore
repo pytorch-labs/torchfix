@@ -2,4 +2,3 @@
 .pytest_cache/
 __pycache__/
 *.egg-info/*
-torchfix/visitors/deprecated_symbols/__init__.py

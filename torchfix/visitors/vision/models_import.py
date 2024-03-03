@@ -12,15 +12,15 @@ class TorchVisionModelsImportVisitor(TorchVisitor):
                 if (
                     isinstance(imported_item.name.value, cst.Name)
                     and imported_item.name.value.value == "torchvision"
+                    and isinstance(imported_item.name.attr, cst.Name)
                     and imported_item.name.attr.value == "models"
                     and imported_item.asname is not None
+                    and isinstance(imported_item.asname.name, cst.Name)
                     and imported_item.asname.name.value == "models"
                 ):
-                    print(imported_item.asname.name.value)
                     position = self.get_metadata(
                         cst.metadata.WhitespaceInclusivePositionProvider, node
                     )
-                    # print(position)
                     replacement = cst.ImportFrom(
                             module=cst.Name("torchvision"),
                             names=[cst.ImportAlias(name=cst.Name("models"))],

@@ -231,7 +231,6 @@ class TorchCodemod(codemod.Codemod):
         update_functorch_imports_visitor = _UpdateFunctorchImports()
         new_module = new_module.visit(update_functorch_imports_visitor)
 
-
         if fixes_count == 0 and not update_functorch_imports_visitor.changed:
             raise codemod.SkipFile("No changes")
 
