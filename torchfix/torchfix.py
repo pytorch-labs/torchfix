@@ -9,7 +9,6 @@ from .common import deep_multi_replace
 from .visitors.deprecated_symbols import (
     TorchDeprecatedSymbolsVisitor,
     _UpdateFunctorchImports,
-    _UpdateTorchvisionModelsImports,
 )
 
 from .visitors.internal import TorchScopedLibraryVisitor
@@ -20,6 +19,7 @@ from .visitors.misc import (TorchRequireGradVisitor, TorchReentrantCheckpointVis
 from .visitors.vision import (
     TorchVisionDeprecatedPretrainedVisitor,
     TorchVisionDeprecatedToTensorVisitor,
+    TorchVisionModelsImportVisitor,
 )
 from .visitors.security import TorchUnsafeLoadVisitor
 
@@ -36,6 +36,7 @@ ALL_VISITOR_CLS = [
     TorchSynchronizedDataLoaderVisitor,
     TorchVisionDeprecatedPretrainedVisitor,
     TorchVisionDeprecatedToTensorVisitor,
+    TorchVisionModelsImportVisitor,
     TorchUnsafeLoadVisitor,
     TorchReentrantCheckpointVisitor,
 ]
@@ -230,11 +231,8 @@ class TorchCodemod(codemod.Codemod):
         update_functorch_imports_visitor = _UpdateFunctorchImports()
         new_module = new_module.visit(update_functorch_imports_visitor)
 
-        update_torchvision_models_visitor = _UpdateTorchvisionModelsImports()
-        new_module = new_module.visit(update_torchvision_models_visitor)
 
-        if fixes_count == 0 and not update_functorch_imports_visitor.changed \
-            and not update_torchvision_models_visitor.changed:
+        if fixes_count == 0 and not update_functorch_imports_visitor.changed:
             raise codemod.SkipFile("No changes")
 
         return new_module
