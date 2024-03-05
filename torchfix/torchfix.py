@@ -19,6 +19,7 @@ from .visitors.misc import (TorchRequireGradVisitor, TorchReentrantCheckpointVis
 from .visitors.vision import (
     TorchVisionDeprecatedPretrainedVisitor,
     TorchVisionDeprecatedToTensorVisitor,
+    TorchVisionModelsImportVisitor,
 )
 from .visitors.security import TorchUnsafeLoadVisitor
 
@@ -35,6 +36,7 @@ ALL_VISITOR_CLS = [
     TorchSynchronizedDataLoaderVisitor,
     TorchVisionDeprecatedPretrainedVisitor,
     TorchVisionDeprecatedToTensorVisitor,
+    TorchVisionModelsImportVisitor,
     TorchUnsafeLoadVisitor,
     TorchReentrantCheckpointVisitor,
 ]
