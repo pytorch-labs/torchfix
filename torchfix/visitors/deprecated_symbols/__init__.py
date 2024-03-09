@@ -1,11 +1,10 @@
 import libcst as cst
 import yaml
 from typing import Optional
-from collections.abc import Sequence
-
 from ...common import (
     TorchVisitor,
     call_with_name_changes,
+    ToReplaceImportItem,
     LintViolation,
 )
 
@@ -17,6 +16,20 @@ from .qr import call_replacement_qr
 
 class TorchDeprecatedSymbolsVisitor(TorchVisitor):
     ERROR_CODE = ["TOR001", "TOR101"]
+    FUCTORCH_REPLACE_IMPORTS = ToReplaceImportItem(
+        "functorch",
+        (
+            "vmap",
+            "grad",
+            "vjp",
+            "jvp",
+            "jacrev",
+            "jacfwd",
+            "hessian",
+            "functionalize",
+        ),
+        "torch.func",
+    )
 
     def __init__(self, deprecated_config_path=None):
         def read_deprecated_config(path=None):
@@ -29,6 +42,7 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
 
         super().__init__()
         self.deprecated_config = read_deprecated_config(deprecated_config_path)
+        self.to_replace_imports.add(self.FUCTORCH_REPLACE_IMPORTS)
 
     def _call_replacement(
         self, node: cst.Call, qualified_name: str
@@ -88,32 +102,3 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
                     replacement=replacement,
                 )
             )
-
-
-# TODO: refactor/generalize this.
-class _UpdateFunctorchImports(cst.CSTTransformer):
-    REPLACEMENTS = {
-        "vmap",
-        "grad",
-        "vjp",
-        "jvp",
-        "jacrev",
-        "jacfwd",
-        "hessian",
-        "functionalize",
-    }
-
-    def __init__(self):
-        self.changed = False
-
-    def leave_ImportFrom(
-        self, node: cst.ImportFrom, updated_node: cst.ImportFrom
-    ) -> cst.ImportFrom:
-        if (
-            getattr(node.module, "value", None) == "functorch"
-            and isinstance(node.names, Sequence)
-            and all(name.name.value in self.REPLACEMENTS for name in node.names)
-        ):
-            self.changed = True
-            return updated_node.with_changes(module=cst.parse_expression("torch.func"))
-        return updated_node

@@ -1,20 +1,17 @@
 from dataclasses import dataclass
 import functools
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Set
 import libcst as cst
 import libcst.codemod as codemod
 
-from .common import deep_multi_replace
-from .visitors.deprecated_symbols import (
-    TorchDeprecatedSymbolsVisitor,
-    _UpdateFunctorchImports,
-)
+from .common import deep_multi_replace, ReplaceImportsTransformer, ToReplaceImportItem
+from .visitors.deprecated_symbols import TorchDeprecatedSymbolsVisitor
 
 from .visitors.internal import TorchScopedLibraryVisitor
 
 from .visitors.performance import TorchSynchronizedDataLoaderVisitor
-from .visitors.misc import (TorchRequireGradVisitor, TorchReentrantCheckpointVisitor)
+from .visitors.misc import TorchRequireGradVisitor, TorchReentrantCheckpointVisitor
 
 from .visitors.vision import (
     TorchVisionDeprecatedPretrainedVisitor,
@@ -118,8 +115,10 @@ def process_error_code_str(code_str):
         if c == "ALL":
             continue
         if len(expand_error_codes((c,))) == 0:
-            raise ValueError(f"Invalid error code: {c}, available error "
-                             f"codes: {list(GET_ALL_ERROR_CODES())}")
+            raise ValueError(
+                f"Invalid error code: {c}, available error "
+                f"codes: {list(GET_ALL_ERROR_CODES())}"
+            )
 
     if "ALL" in raw_codes:
         return GET_ALL_ERROR_CODES()
@@ -192,10 +191,12 @@ class TorchCodemod(codemod.Codemod):
 
         violations = []
         needed_imports = []
+        to_replace_imports: Set[ToReplaceImportItem] = set()
         wrapped_module.visit_batched(visitors)
         for v in visitors:
             violations += v.violations
             needed_imports += v.needed_imports
+            to_replace_imports.update(v.to_replace_imports)
 
         fixes_count = 0
         replacement_map = {}
@@ -228,10 +229,10 @@ class TorchCodemod(codemod.Codemod):
         )
         new_module = new_module.visit(add_imports_visitor)
 
-        update_functorch_imports_visitor = _UpdateFunctorchImports()
-        new_module = new_module.visit(update_functorch_imports_visitor)
+        replace_imports_transformer = ReplaceImportsTransformer(to_replace_imports)
+        new_module = new_module.visit(replace_imports_transformer)
 
-        if fixes_count == 0 and not update_functorch_imports_visitor.changed:
+        if fixes_count == 0 and not replace_imports_transformer.changed:
             raise codemod.SkipFile("No changes")
 
         return new_module

@@ -1,9 +1,9 @@
-from dataclasses import dataclass
+import dataclasses
 import sys
 import libcst as cst
 from libcst.metadata import QualifiedNameProvider, WhitespaceInclusivePositionProvider
 from libcst.codemod.visitors import ImportItem
-from typing import Optional, List, Set, Tuple, Union
+from typing import Optional, List, Set, Tuple, Union, Dict, Sequence
 from abc import ABC
 
 IS_TTY = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
@@ -13,7 +13,7 @@ BOLD = "\033[1m" if IS_TTY else ""
 ENDC = "\033[0m" if IS_TTY else ""
 
 
-@dataclass
+@dataclasses.dataclass(frozen=True)
 class LintViolation:
     error_code: str
     message: str
@@ -34,6 +34,49 @@ class LintViolation:
         return f"{position} {error_code}{fixable} {self.message}"
 
 
+@dataclasses.dataclass(frozen=True)
+class ToReplaceImportItem:
+    old_module: str
+    old_names: Tuple[str, ...]
+    new_module: str
+
+
+class ReplaceImportsTransformer(cst.CSTTransformer):
+    def __init__(self, to_replace_imports: Set[ToReplaceImportItem]) -> None:
+        super().__init__()
+        self.changed = False
+
+        # Merge all items with the same old_module.
+        self.to_replace_imports: Dict[str, ToReplaceImportItem] = {}
+        for item in to_replace_imports:
+            if item.old_module in self.to_replace_imports:
+                existing_item = self.to_replace_imports[item.old_module]
+                # Assert no different new_module for the same old_module.
+                assert item.new_module == existing_item.new_module
+                merged_old_names = existing_item.old_names + item.old_names
+                existing_item = dataclasses.replace(
+                    existing_item, old_names=merged_old_names
+                )
+            else:
+                self.to_replace_imports[item.old_module] = item
+
+    def leave_ImportFrom(
+        self, node: cst.ImportFrom, updated_node: cst.ImportFrom
+    ) -> cst.ImportFrom:
+        if node.module is not None:
+            module = cst.helpers.get_full_name_for_node(node.module)
+            if module in self.to_replace_imports:
+                replace_item = self.to_replace_imports[module]
+                if isinstance(node.names, Sequence) and all(
+                    name.name.value in replace_item.old_names for name in node.names
+                ):
+                    self.changed = True
+                    return updated_node.with_changes(
+                        module=cst.parse_expression(replace_item.new_module)
+                    )
+        return updated_node
+
+
 class TorchVisitor(cst.BatchableCSTVisitor, ABC):
     METADATA_DEPENDENCIES = (
         QualifiedNameProvider,
@@ -45,6 +88,7 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
     def __init__(self) -> None:
         self.violations: List[LintViolation] = []
         self.needed_imports: Set[ImportItem] = set()
+        self.to_replace_imports: Set[ToReplaceImportItem] = set()
 
     @staticmethod
     def get_specific_arg(
