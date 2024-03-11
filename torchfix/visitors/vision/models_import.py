@@ -5,10 +5,16 @@ from ...common import LintViolation, TorchVisitor
 
 class TorchVisionModelsImportVisitor(TorchVisitor):
     ERROR_CODE = "TOR203"
+    MESSAGE = (
+        "Consider replacing 'import torchvision.models as models' "
+        "with 'from torchvision import models'."
+    )
 
     def visit_Import(self, node: cst.Import) -> None:
+        replacement = None
         for imported_item in node.names:
             if isinstance(imported_item.name, cst.Attribute):
+                # TODO refactor using libcst.matchers.matches
                 if (
                     isinstance(imported_item.name.value, cst.Name)
                     and imported_item.name.value.value == "torchvision"
@@ -21,20 +27,20 @@ class TorchVisionModelsImportVisitor(TorchVisitor):
                     position = self.get_metadata(
                         cst.metadata.WhitespaceInclusivePositionProvider, node
                     )
-                    replacement = cst.ImportFrom(
-                            module=cst.Name("torchvision"),
-                            names=[cst.ImportAlias(name=cst.Name("models"))],
-                            )
+                    # Replace only if the import statement has no other names
+                    if len(node.names) == 1:
+                        replacement = cst.ImportFrom(
+                                module=cst.Name("torchvision"),
+                                names=[cst.ImportAlias(name=cst.Name("models"))],
+                                )
                     self.violations.append(
                         LintViolation(
                             error_code=self.ERROR_CODE,
-                            message=(
-                                "Consider replacing 'import torchvision.models as"
-                                " models' with 'from torchvision import models'."
-                            ),
+                            message=self.MESSAGE,
                             line=position.start.line,
                             column=position.start.column,
                             node=node,
                             replacement=replacement
                         )
                     )
+                break
