@@ -1,6 +1,5 @@
 import torchvision.models as models
 import torchvision.models as cnn
-from torchvision.models import resnet50, resnet101
-import torchvision.models
-from torchvision.models import *
+
+# don't touch if more than one name imported
 import torchvision.models as models, torch
