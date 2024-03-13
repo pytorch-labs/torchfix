@@ -13,7 +13,8 @@ reporting issues.
 TorchFix can be used as a Flake8 plugin (linting only) or as a standalone
 program (with autofix available for a subset of the lint violations).
 
-Currently TorchFix is in a **beta version** stage, so there are still a lot of rough
+> [!WARNING]
+> Currently TorchFix is in a **beta version** stage, so there are still a lot of rough
 edges and many things can and will change.
 
 ## Installation
@@ -36,7 +37,8 @@ TorchFix can also be run as a standalone program: `torchfix .`
 Add `--fix` parameter to try to autofix some of the issues (the files will be overwritten!)
 To see some additional debug info, add `--show-stderr` parameter.
 
-Please keep in mind that autofix is a best-effort mechanism. Given the dynamic nature of Python,
+> [!CAUTION]
+> Please keep in mind that autofix is a best-effort mechanism. Given the dynamic nature of Python,
 and especially the beta version status of TorchFix, it's very difficult to have
 certainty when making changes to code, even for the seemingly trivial fixes.
 
@@ -83,9 +85,9 @@ for details.
 
 #### torch.nn.utils.weight_norm
 
-This function is deprecated. Use :func:`torch.nn.utils.parametrizations.weight_norm`
-which uses the modern parametrization API. The new ``weight_norm`` is compatible
-with ``state_dict`` generated from old ``weight_norm``.
+This function is deprecated. Use `torch.nn.utils.parametrizations.weight_norm`
+which uses the modern parametrization API. The new `weight_norm` is compatible
+with `state_dict` generated from old `weight_norm`.
 
 Migration guide:
 
