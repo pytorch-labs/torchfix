@@ -16,7 +16,7 @@ from .qr import call_replacement_qr
 
 
 class TorchDeprecatedSymbolsVisitor(TorchVisitor):
-    ERROR_CODE = ["TOR001", "TOR101"]
+    ERROR_CODE = ["TOR001", "TOR101", "TOR004", "TOR103"]
 
     def __init__(self, deprecated_config_path=None):
         def read_deprecated_config(path=None):
@@ -57,7 +57,43 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
                     self.needed_imports.update(imports)
         return replacement
 
-    def visit_Call(self, node):
+    def visit_ImportFrom(self, node: cst.ImportFrom) -> None:
+        if node.module is None:
+            return
+
+        module = cst.helpers.get_full_name_for_node(node.module)
+        if isinstance(node.names, Sequence):
+            for name in node.names:
+                qualified_name = module + "." + name.name.value
+                position_metadata = self.get_metadata(
+                    cst.metadata.WhitespaceInclusivePositionProvider, node
+                )
+                if qualified_name in self.deprecated_config:
+                    if self.deprecated_config[qualified_name]["remove_pr"] is None:
+                        error_code = self.ERROR_CODE[3]
+                        message = f"Import of deprecated function {qualified_name}"
+                    else:
+                        error_code = self.ERROR_CODE[2]
+                        message = f"Import of removed function {qualified_name}"
+
+                    reference = self.deprecated_config[qualified_name].get(
+                        "reference"
+                    )
+                    if reference is not None:
+                        message = f"{message}: {reference}"
+
+                    self.violations.append(
+                        LintViolation(
+                            error_code=error_code,
+                            message=message,
+                            line=position_metadata.start.line,
+                            column=position_metadata.start.column,
+                            node=node,
+                            replacement=None,
+                        )
+                    )
+
+    def visit_Call(self, node) -> None:
         qualified_name = self.get_qualified_name_for_call(node)
         if qualified_name is None:
             return

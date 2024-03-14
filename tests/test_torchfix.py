@@ -75,7 +75,7 @@ def test_parse_error_code_str():
         ("ALL,TOR102", GET_ALL_ERROR_CODES()),
         ("TOR102", {"TOR102"}),
         ("TOR102,TOR101", {"TOR102", "TOR101"}),
-        ("TOR1,TOR102", {"TOR102", "TOR101"}),
+        ("TOR1,TOR102", {"TOR102", "TOR101", "TOR103"}),
         (None, GET_ALL_ERROR_CODES() - exclude_set),
     ]
     for case, expected in cases:
