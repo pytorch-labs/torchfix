@@ -64,7 +64,7 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
         module = cst.helpers.get_full_name_for_node(node.module)
         if isinstance(node.names, Sequence):
             for name in node.names:
-                qualified_name = module + "." + name.name.value
+                qualified_name = f"{module}.{name.name.value}"
                 position_metadata = self.get_metadata(
                     cst.metadata.WhitespaceInclusivePositionProvider, node
                 )
