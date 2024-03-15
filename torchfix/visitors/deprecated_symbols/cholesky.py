@@ -1,5 +1,5 @@
 import libcst as cst
-from ...common import (TorchVisitor, get_module_name)
+from ...common import TorchVisitor, get_module_name
 
 
 def call_replacement_cholesky(node: cst.Call) -> cst.CSTNode:

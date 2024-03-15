@@ -1,6 +1,6 @@
 import libcst as cst
 
-from ...common import LintViolation, TorchVisitor
+from ...common import TorchVisitor
 
 
 class TorchVisionModelsImportVisitor(TorchVisitor):
@@ -24,23 +24,16 @@ class TorchVisionModelsImportVisitor(TorchVisitor):
                     and isinstance(imported_item.asname.name, cst.Name)
                     and imported_item.asname.name.value == "models"
                 ):
-                    position = self.get_metadata(
-                        cst.metadata.WhitespaceInclusivePositionProvider, node
-                    )
                     # Replace only if the import statement has no other names
                     if len(node.names) == 1:
                         replacement = cst.ImportFrom(
-                                module=cst.Name("torchvision"),
-                                names=[cst.ImportAlias(name=cst.Name("models"))],
-                                )
-                    self.violations.append(
-                        LintViolation(
-                            error_code=self.ERROR_CODE,
-                            message=self.MESSAGE,
-                            line=position.start.line,
-                            column=position.start.column,
-                            node=node,
-                            replacement=replacement
+                            module=cst.Name("torchvision"),
+                            names=[cst.ImportAlias(name=cst.Name("models"))],
                         )
+                    self.add_violation(
+                        node,
+                        error_code=self.ERROR_CODE,
+                        message=self.MESSAGE,
+                        replacement=replacement,
                     )
                 break

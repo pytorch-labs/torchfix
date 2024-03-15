@@ -3,7 +3,7 @@ from typing import Optional
 import libcst as cst
 from libcst.codemod.visitors import ImportItem
 
-from ...common import LintViolation, TorchVisitor
+from ...common import TorchVisitor
 
 
 class TorchVisionDeprecatedPretrainedVisitor(TorchVisitor):
@@ -248,16 +248,9 @@ class TorchVisionDeprecatedPretrainedVisitor(TorchVisitor):
                 node.with_changes(args=replacement_args) if has_replacement else None
             )
             if message is not None:
-                position_metadata = self.get_metadata(
-                    cst.metadata.WhitespaceInclusivePositionProvider, node
-                )
-                self.violations.append(
-                    LintViolation(
-                        error_code=self.ERROR_CODE,
-                        message=message,
-                        line=position_metadata.start.line,
-                        column=position_metadata.start.column,
-                        node=node,
-                        replacement=replacement,
-                    )
+                self.add_violation(
+                    node,
+                    error_code=self.ERROR_CODE,
+                    message=message,
+                    replacement=replacement,
                 )

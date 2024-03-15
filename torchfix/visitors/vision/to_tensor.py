@@ -1,32 +1,21 @@
 from collections.abc import Sequence
 import libcst as cst
 
-from ...common import LintViolation, TorchVisitor
+from ...common import TorchVisitor
 
 
 class TorchVisionDeprecatedToTensorVisitor(TorchVisitor):
     ERROR_CODE = "TOR202"
+    MESSAGE = (
+        "The transform `v2.ToTensor()` is deprecated and will be removed "
+        "in a future release. Instead, please use "
+        "`v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)])`."  # noqa: E501
+    )
 
     def _maybe_add_violation(self, qualified_name, node):
         if qualified_name != "torchvision.transforms.v2.ToTensor":
             return
-        position = self.get_metadata(
-            cst.metadata.WhitespaceInclusivePositionProvider, node
-        )
-        self.violations.append(
-            LintViolation(
-                error_code=self.ERROR_CODE,
-                message=(
-                    "The transform `v2.ToTensor()` is deprecated and will be removed "
-                    "in a future release. Instead, please use "
-                    "`v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)])`."  # noqa: E501
-                ),
-                line=position.start.line,
-                column=position.start.column,
-                node=node,
-                replacement=None,
-            )
-        )
+        self.add_violation(node, error_code=self.ERROR_CODE, message=self.MESSAGE)
 
     def visit_ImportFrom(self, node):
         module_path = cst.helpers.get_absolute_module_from_package_for_import(

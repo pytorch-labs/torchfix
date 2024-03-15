@@ -1,6 +1,6 @@
 import libcst as cst
 from typing import Optional
-from ...common import (TorchVisitor, get_module_name)
+from ...common import TorchVisitor, get_module_name
 
 
 def call_replacement_qr(node: cst.Call) -> Optional[cst.CSTNode]:
