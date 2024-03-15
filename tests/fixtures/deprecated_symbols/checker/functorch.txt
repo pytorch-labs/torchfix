@@ -1,1 +1,3 @@
 4:1 TOR101 Use of deprecated function functorch.vmap
+6:1 TOR103 Import of deprecated function functorch.vmap
+6:1 TOR103 Import of deprecated function functorch.jacrev
