@@ -15,6 +15,7 @@ from .visitors.internal import TorchScopedLibraryVisitor
 
 from .visitors.performance import TorchSynchronizedDataLoaderVisitor
 from .visitors.misc import (TorchRequireGradVisitor, TorchReentrantCheckpointVisitor)
+from .visitors.nonpublic import TorchNonPublicAliasVisitor
 
 from .visitors.vision import (
     TorchVisionDeprecatedPretrainedVisitor,
@@ -39,6 +40,7 @@ ALL_VISITOR_CLS = [
     TorchVisionModelsImportVisitor,
     TorchUnsafeLoadVisitor,
     TorchReentrantCheckpointVisitor,
+    TorchNonPublicAliasVisitor,
 ]
 
 

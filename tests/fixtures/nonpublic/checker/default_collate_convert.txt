@@ -1,0 +1,8 @@
+2:9 TOR104 Use of non-public function `torch.utils.data._utils.collate.default_collate`, please use `torch.utils.data.dataloader.default_collate` instead
+4:1 TOR105 Import of non-public function `torch.utils.data._utils.collate.default_collate`, please use `torch.utils.data.dataloader.default_collate` instead
+5:29 TOR104 Use of non-public function `torch.utils.data._utils.collate.default_collate`, please use `torch.utils.data.dataloader.default_collate` instead
+5:54 TOR104 Use of non-public function `torch.utils.data._utils.collate.default_collate`, please use `torch.utils.data.dataloader.default_collate` instead
+5:79 TOR104 Use of non-public function `torch.utils.data._utils.collate.default_collate`, please use `torch.utils.data.dataloader.default_collate` instead
+7:1 TOR105 Import of non-public function `torch.utils.data._utils.collate.default_convert`, please use `torch.utils.data.dataloader.default_convert` instead
+8:10 TOR104 Use of non-public function `torch.utils.data._utils.collate.default_convert`, please use `torch.utils.data.dataloader.default_convert` instead
+11:10 TOR104 Use of non-public function `torch.utils.data._utils.collate.default_convert`, please use `torch.utils.data.dataloader.default_convert` instead
