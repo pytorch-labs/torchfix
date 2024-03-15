@@ -1,5 +1,4 @@
-import libcst as cst
-from ...common import TorchVisitor, LintViolation
+from ...common import TorchVisitor
 
 
 class TorchScopedLibraryVisitor(TorchVisitor):
@@ -17,17 +16,4 @@ class TorchScopedLibraryVisitor(TorchVisitor):
     def visit_Call(self, node):
         qualified_name = self.get_qualified_name_for_call(node)
         if qualified_name == "torch.library.Library":
-            position_metadata = self.get_metadata(
-                cst.metadata.WhitespaceInclusivePositionProvider, node
-            )
-
-            self.violations.append(
-                LintViolation(
-                    error_code=self.ERROR_CODE,
-                    message=self.MESSAGE,
-                    line=position_metadata.start.line,
-                    column=position_metadata.start.column,
-                    node=node,
-                    replacement=None,
-                )
-            )
+            self.add_violation(node, error_code=self.ERROR_CODE, message=self.MESSAGE)

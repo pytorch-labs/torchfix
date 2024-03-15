@@ -1,8 +1,7 @@
-import libcst as cst
 import libcst.matchers as m
 
 
-from ...common import TorchVisitor, LintViolation
+from ...common import TorchVisitor
 
 
 class TorchSynchronizedDataLoaderVisitor(TorchVisitor):
@@ -25,17 +24,6 @@ class TorchSynchronizedDataLoaderVisitor(TorchVisitor):
             if num_workers_arg is None or m.matches(
                 num_workers_arg.value, m.Integer(value="0")
             ):
-                position_metadata = self.get_metadata(
-                    cst.metadata.WhitespaceInclusivePositionProvider, node
-                )
-
-                self.violations.append(
-                    LintViolation(
-                        error_code=self.ERROR_CODE,
-                        message=self.MESSAGE,
-                        line=position_metadata.start.line,
-                        column=position_metadata.start.column,
-                        node=node,
-                        replacement=None,
-                    )
+                self.add_violation(
+                    node, error_code=self.ERROR_CODE, message=self.MESSAGE
                 )

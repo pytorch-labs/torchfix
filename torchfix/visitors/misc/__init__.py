@@ -2,7 +2,7 @@ import libcst as cst
 import libcst.matchers as m
 
 
-from ...common import TorchVisitor, LintViolation
+from ...common import TorchVisitor
 
 
 class TorchRequireGradVisitor(TorchVisitor):
@@ -31,20 +31,11 @@ class TorchRequireGradVisitor(TorchVisitor):
             replacement = node.with_deep_changes(
                 old_node=node.targets[0].target.attr, value="requires_grad"
             )
-
-            position_metadata = self.get_metadata(
-                cst.metadata.WhitespaceInclusivePositionProvider, node
-            )
-
-            self.violations.append(
-                LintViolation(
-                    error_code=self.ERROR_CODE,
-                    message=self.MESSAGE,
-                    line=position_metadata.start.line,
-                    column=position_metadata.start.column,
-                    node=node,
-                    replacement=replacement,
-                )
+            self.add_violation(
+                node,
+                error_code=self.ERROR_CODE,
+                message=self.MESSAGE,
+                replacement=replacement,
             )
 
 
@@ -65,10 +56,6 @@ class TorchReentrantCheckpointVisitor(TorchVisitor):
         if qualified_name == "torch.utils.checkpoint.checkpoint":
             use_reentrant_arg = self.get_specific_arg(node, "use_reentrant", -1)
             if use_reentrant_arg is None:
-                position_metadata = self.get_metadata(
-                    cst.metadata.WhitespaceInclusivePositionProvider, node
-                )
-
                 # This codemod maybe  unsafe correctness-wise
                 # if reentrant behavior is actually needed,
                 # so the changes need to be verified/tested.
@@ -76,14 +63,9 @@ class TorchReentrantCheckpointVisitor(TorchVisitor):
                     cst.parse_expression("f(use_reentrant=False)"), cst.Call
                 ).args[0]
                 replacement = node.with_changes(args=node.args + (use_reentrant_arg,))
-
-                self.violations.append(
-                    LintViolation(
-                        error_code=self.ERROR_CODE,
-                        message=self.MESSAGE,
-                        line=position_metadata.start.line,
-                        column=position_metadata.start.column,
-                        node=node,
-                        replacement=replacement,
-                    )
+                self.add_violation(
+                    node,
+                    error_code=self.ERROR_CODE,
+                    message=self.MESSAGE,
+                    replacement=replacement,
                 )

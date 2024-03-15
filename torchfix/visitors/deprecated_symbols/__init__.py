@@ -6,7 +6,6 @@ from collections.abc import Sequence
 from ...common import (
     TorchVisitor,
     call_with_name_changes,
-    LintViolation,
 )
 
 from .range import call_replacement_range
@@ -65,9 +64,6 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
         if isinstance(node.names, Sequence):
             for name in node.names:
                 qualified_name = f"{module}.{name.name.value}"
-                position_metadata = self.get_metadata(
-                    cst.metadata.WhitespaceInclusivePositionProvider, node
-                )
                 if qualified_name in self.deprecated_config:
                     if self.deprecated_config[qualified_name]["remove_pr"] is None:
                         error_code = self.ERROR_CODE[3]
@@ -76,22 +72,11 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
                         error_code = self.ERROR_CODE[2]
                         message = f"Import of removed function {qualified_name}"
 
-                    reference = self.deprecated_config[qualified_name].get(
-                        "reference"
-                    )
+                    reference = self.deprecated_config[qualified_name].get("reference")
                     if reference is not None:
                         message = f"{message}: {reference}"
 
-                    self.violations.append(
-                        LintViolation(
-                            error_code=error_code,
-                            message=message,
-                            line=position_metadata.start.line,
-                            column=position_metadata.start.column,
-                            node=node,
-                            replacement=None,
-                        )
-                    )
+                    self.add_violation(node, error_code=error_code, message=message)
 
     def visit_Call(self, node) -> None:
         qualified_name = self.get_qualified_name_for_call(node)
@@ -99,9 +84,6 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
             return
 
         if qualified_name in self.deprecated_config:
-            position_metadata = self.get_metadata(
-                cst.metadata.WhitespaceInclusivePositionProvider, node
-            )
             if self.deprecated_config[qualified_name]["remove_pr"] is None:
                 error_code = self.ERROR_CODE[1]
                 message = f"Use of deprecated function {qualified_name}"
@@ -114,15 +96,8 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
             if reference is not None:
                 message = f"{message}: {reference}"
 
-            self.violations.append(
-                LintViolation(
-                    error_code=error_code,
-                    message=message,
-                    line=position_metadata.start.line,
-                    column=position_metadata.start.column,
-                    node=node,
-                    replacement=replacement,
-                )
+            self.add_violation(
+                node, error_code=error_code, message=message, replacement=replacement
             )
 
 
