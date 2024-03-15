@@ -61,6 +61,27 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
                 return arg
         return None
 
+    def add_violation(
+        self,
+        node: cst.CSTNode,
+        error_code: str,
+        message: str,
+        replacement: Optional[cst.CSTNode] = None,
+    ) -> None:
+        position_metadata = self.get_metadata(
+            cst.metadata.WhitespaceInclusivePositionProvider, node
+        )
+        self.violations.append(
+            LintViolation(
+                error_code=error_code,
+                message=message,
+                line=position_metadata.start.line,
+                column=position_metadata.start.column,
+                node=node,
+                replacement=replacement,
+            )
+        )
+
     def get_qualified_name_for_call(self, node: cst.Call) -> Optional[str]:
         # Guard against situations like `vmap(a)(b)`:
         #
