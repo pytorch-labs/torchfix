@@ -82,7 +82,7 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
                 # Replace only if the import statement has no other names
                 if len(node.names) == 1:
                     replacement = cst.ImportFrom(
-                        module=cst.parse_expression(new_module),  # type: ignore[arg-type]
+                        module=cst.parse_expression(new_module),  # type: ignore[arg-type] # noqa: E501
                         names=[cst.ImportAlias(name=cst.Name(new_name))],
                     )
                 else:
