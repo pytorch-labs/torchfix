@@ -44,7 +44,9 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
                 new_call_name = public_name.removeprefix(
                     commonprefix([qualified_name.removesuffix(call_name), public_name])
                 )
-                new_module_name = public_name.removesuffix(new_call_name).removesuffix(".")
+                new_module_name = public_name.removesuffix(new_call_name).removesuffix(
+                    "."
+                )
                 if new_module_name:
                     self.needed_imports.add(
                         ImportItem(
