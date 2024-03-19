@@ -1,6 +1,9 @@
+from os.path import commonprefix
 from typing import Sequence
 
 import libcst as cst
+from libcst.codemod.visitors import ImportItem
+
 from ...common import TorchVisitor
 
 
@@ -32,7 +35,32 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
             public_name = self.ALIASES[qualified_name]
             error_code = self.ERROR_CODE[0]
             message = f"Use of non-public function `{qualified_name}`, please use `{public_name}` instead"  # noqa: E501
-            self.add_violation(node, error_code=error_code, message=message)
+
+            call_name = cst.helpers.get_full_name_for_node(node)
+            replacement = None
+            if not public_name.endswith(call_name):
+                # We need to change the call name as it's not in the public name.
+                # Get the new call name on the same hierarchical level.
+                new_call_name = public_name.removeprefix(
+                    commonprefix([qualified_name.removesuffix(call_name), public_name])
+                )
+                new_module_name = public_name.removesuffix(new_call_name).removesuffix(
+                    "."
+                )
+                if new_module_name:
+                    self.needed_imports.add(
+                        ImportItem(
+                            module_name=new_module_name,
+                            obj_name=new_call_name.split(".")[0],
+                        )
+                    )
+                replacement = node.with_changes(
+                    func=cst.parse_expression(new_call_name)
+                )
+
+            self.add_violation(
+                node, error_code=error_code, message=message, replacement=replacement
+            )
 
     def visit_ImportFrom(self, node: cst.ImportFrom) -> None:
         if node.module is None:
@@ -48,4 +76,20 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
                 public_name = self.ALIASES[qualified_name]
                 error_code = self.ERROR_CODE[1]
                 message = f"Import of non-public function `{qualified_name}`, please use `{public_name}` instead"  # noqa: E501
-                self.add_violation(node, error_code=error_code, message=message)
+
+                new_module = ".".join(public_name.split(".")[:-1])
+                new_name = public_name.split(".")[-1]
+                # Replace only if the import statement has no other names
+                if len(node.names) == 1:
+                    replacement = cst.ImportFrom(
+                        module=cst.parse_expression(new_module),  # type: ignore[arg-type] # noqa: E501
+                        names=[cst.ImportAlias(name=cst.Name(new_name))],
+                    )
+                else:
+                    replacement = None
+                self.add_violation(
+                    node,
+                    error_code=error_code,
+                    message=message,
+                    replacement=replacement,
+                )
