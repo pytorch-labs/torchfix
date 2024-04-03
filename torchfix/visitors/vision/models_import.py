@@ -16,7 +16,7 @@ class TorchVisionModelsImportVisitor(TorchVisitor):
         for imported_item in node.names:
             if m.matches(imported_item, m.ImportAlias(
                 name=m.Attribute(value=m.Name("torchvision"),
-                                attr=m.Name("models")),
+                attr=m.Name("models")),
                 asname=m.AsName(name=m.Name("models"))
             )):
                 # Replace only if the import statement has no other names
