@@ -1,4 +1,5 @@
 import libcst as cst
+import libcst.matchers as m
 
 from ...common import TorchVisitor
 
@@ -13,7 +14,7 @@ class TorchVisionModelsImportVisitor(TorchVisitor):
     def visit_Import(self, node: cst.Import) -> None:
         replacement = None
         for imported_item in node.names:
-            # Refactor each import item from node using libcst.matchers.matches
+            #  Check matches on each imported items from node
             if m.matches(imported_item, m.ImportAlias(
                 name=m.Attribute(value=m.Name("torchvision"),
                                     attr=m.Name("models")),
