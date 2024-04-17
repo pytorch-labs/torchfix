@@ -26,7 +26,7 @@ from .visitors.security import TorchUnsafeLoadVisitor
 
 __version__ = "0.4.0"
 
-DEPRECATED_CONFIG_PATH = Path(__file__).absolute().parent / "deprecated_symbols.yaml"
+DEPRECATED_CONFIG_PATH = "deprecated_symbols.yaml"
 
 DISABLED_BY_DEFAULT = ["TOR3", "TOR4", "TOR9"]
 
