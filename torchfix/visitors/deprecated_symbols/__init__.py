@@ -1,4 +1,5 @@
 import libcst as cst
+import pkgutil
 import yaml
 from typing import Optional
 from collections.abc import Sequence
@@ -21,9 +22,9 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
         def read_deprecated_config(path=None):
             deprecated_config = {}
             if path is not None:
-                with open(path) as f:
-                    for item in yaml.load(f, yaml.SafeLoader):
-                        deprecated_config[item["name"]] = item
+                data = pkgutil.get_data("torchfix", path)
+                for item in yaml.load(data, yaml.SafeLoader):
+                    deprecated_config[item["name"]] = item
             return deprecated_config
 
         super().__init__()
