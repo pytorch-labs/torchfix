@@ -24,7 +24,7 @@ from .visitors.vision import (
 )
 from .visitors.security import TorchUnsafeLoadVisitor
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 DEPRECATED_CONFIG_PATH = "deprecated_symbols.yaml"
 
