@@ -5,5 +5,5 @@ _register_pytree_node()
 from torch.utils import _pytree as xx
 xx._register_pytree_node()
 
-import torch.utils._pytree._register_pytree_node as yy
-yy()
+import torch
+torch.utils._pytree._register_pytree_node()
