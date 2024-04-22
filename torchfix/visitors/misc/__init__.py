@@ -1,8 +1,7 @@
 import libcst as cst
 import libcst.matchers as m
 
-
-from ...common import TorchVisitor
+from ...common import TorchError, TorchVisitor
 
 
 class TorchRequireGradVisitor(TorchVisitor):
@@ -10,8 +9,12 @@ class TorchRequireGradVisitor(TorchVisitor):
     Find and fix common misspelling `require_grad` (instead of `requires_grad`).
     """
 
-    ERROR_CODE = "TOR002"
-    MESSAGE = "Likely typo `require_grad` in assignment. Did you mean `requires_grad`?"
+    ERRORS = [
+        TorchError(
+            "TOR002",
+            "Likely typo `require_grad` in assignment. Did you mean `requires_grad`?",
+        )
+    ]
 
     def visit_Assign(self, node):
         # Look for any assignment with `require_grad` attribute on the left.
@@ -33,8 +36,8 @@ class TorchRequireGradVisitor(TorchVisitor):
             )
             self.add_violation(
                 node,
-                error_code=self.ERROR_CODE,
-                message=self.MESSAGE,
+                error_code=self.ERRORS[0].error_code,
+                message=self.ERRORS[0].message(),
                 replacement=replacement,
             )
 
@@ -44,12 +47,16 @@ class TorchReentrantCheckpointVisitor(TorchVisitor):
     Find and fix common misuse of reentrant checkpoints.
     """
 
-    ERROR_CODE = "TOR003"
-    MESSAGE = (
-        "Please pass `use_reentrant` explicitly to `checkpoint`. "
-        "To maintain old behavior, pass `use_reentrant=True`. "
-        "It is recommended to use `use_reentrant=False`."
-    )
+    ERRORS = [
+        TorchError(
+            "TOR003",
+            (
+                "Please pass `use_reentrant` explicitly to `checkpoint`. "
+                "To maintain old behavior, pass `use_reentrant=True`. "
+                "It is recommended to use `use_reentrant=False`."
+            ),
+        )
+    ]
 
     def visit_Call(self, node):
         qualified_name = self.get_qualified_name_for_call(node)
@@ -65,7 +72,7 @@ class TorchReentrantCheckpointVisitor(TorchVisitor):
                 replacement = node.with_changes(args=node.args + (use_reentrant_arg,))
                 self.add_violation(
                     node,
-                    error_code=self.ERROR_CODE,
-                    message=self.MESSAGE,
+                    error_code=self.ERRORS[0].error_code,
+                    message=self.ERRORS[0].message(),
                     replacement=replacement,
                 )

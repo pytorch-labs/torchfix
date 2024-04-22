@@ -14,7 +14,7 @@ from .visitors.deprecated_symbols import (
 from .visitors.internal import TorchScopedLibraryVisitor
 
 from .visitors.performance import TorchSynchronizedDataLoaderVisitor
-from .visitors.misc import (TorchRequireGradVisitor, TorchReentrantCheckpointVisitor)
+from .visitors.misc import TorchRequireGradVisitor, TorchReentrantCheckpointVisitor
 from .visitors.nonpublic import TorchNonPublicAliasVisitor
 
 from .visitors.vision import (
@@ -48,10 +48,7 @@ ALL_VISITOR_CLS = [
 def GET_ALL_ERROR_CODES():
     codes = set()
     for cls in ALL_VISITOR_CLS:
-        if isinstance(cls.ERROR_CODE, list):
-            codes |= set(cls.ERROR_CODE)
-        else:
-            codes.add(cls.ERROR_CODE)
+        codes |= set(error.error_code for error in cls.ERRORS)
     return codes
 
 
@@ -86,16 +83,10 @@ def get_visitors_with_error_codes(error_codes):
         # only correspond to one visitor.
         found = False
         for visitor_cls in ALL_VISITOR_CLS:
-            if isinstance(visitor_cls.ERROR_CODE, list):
-                if error_code in visitor_cls.ERROR_CODE:
-                    visitor_classes.add(visitor_cls)
-                    found = True
-                    break
-            else:
-                if error_code == visitor_cls.ERROR_CODE:
-                    visitor_classes.add(visitor_cls)
-                    found = True
-                    break
+            if error_code in list(err.error_code for err in visitor_cls.ERRORS):
+                visitor_classes.add(visitor_cls)
+                found = True
+                break
         if not found:
             raise AssertionError(f"Unknown error code: {error_code}")
     out = []
@@ -120,8 +111,10 @@ def process_error_code_str(code_str):
         if c == "ALL":
             continue
         if len(expand_error_codes((c,))) == 0:
-            raise ValueError(f"Invalid error code: {c}, available error "
-                             f"codes: {list(GET_ALL_ERROR_CODES())}")
+            raise ValueError(
+                f"Invalid error code: {c}, available error "
+                f"codes: {list(GET_ALL_ERROR_CODES())}"
+            )
 
     if "ALL" in raw_codes:
         return GET_ALL_ERROR_CODES()

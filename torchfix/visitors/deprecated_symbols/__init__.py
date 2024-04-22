@@ -1,11 +1,12 @@
 import libcst as cst
 import pkgutil
 import yaml
-from typing import Optional
+from typing import Optional, List
 from collections.abc import Sequence
 
 from ...common import (
     TorchVisitor,
+    TorchError,
     call_with_name_changes,
 )
 
@@ -16,7 +17,12 @@ from .qr import call_replacement_qr
 
 
 class TorchDeprecatedSymbolsVisitor(TorchVisitor):
-    ERROR_CODE = ["TOR001", "TOR101", "TOR004", "TOR103"]
+    ERRORS: List[TorchError] = [
+        TorchError("TOR001", "Use of removed function {qualified_name}"),
+        TorchError("TOR101", "Import of deprecated function {qualified_name}"),
+        TorchError("TOR004", "Import of removed function {qualified_name}"),
+        TorchError("TOR103", "Import of deprecated function {qualified_name}"),
+    ]
 
     def __init__(self, deprecated_config_path=None):
         def read_deprecated_config(path=None):
@@ -67,11 +73,11 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
                 qualified_name = f"{module}.{name.name.value}"
                 if qualified_name in self.deprecated_config:
                     if self.deprecated_config[qualified_name]["remove_pr"] is None:
-                        error_code = self.ERROR_CODE[3]
-                        message = f"Import of deprecated function {qualified_name}"
+                        error_code = self.ERRORS[3].error_code
+                        message = self.ERRORS[3].message(qualified_name=qualified_name)
                     else:
-                        error_code = self.ERROR_CODE[2]
-                        message = f"Import of removed function {qualified_name}"
+                        error_code = self.ERRORS[2].error_code
+                        message = self.ERRORS[2].message(qualified_name=qualified_name)
 
                     reference = self.deprecated_config[qualified_name].get("reference")
                     if reference is not None:
@@ -86,11 +92,12 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
 
         if qualified_name in self.deprecated_config:
             if self.deprecated_config[qualified_name]["remove_pr"] is None:
-                error_code = self.ERROR_CODE[1]
+                error_code = self.ERRORS[1].error_code
+                message = self.ERRORS[1].message(qualified_name=qualified_name)
                 message = f"Use of deprecated function {qualified_name}"
             else:
-                error_code = self.ERROR_CODE[0]
-                message = f"Use of removed function {qualified_name}"
+                error_code = self.ERRORS[0].error_code
+                message = self.ERRORS[0].message(qualified_name=qualified_name)
             replacement = self._call_replacement(node, qualified_name)
 
             reference = self.deprecated_config[qualified_name].get("reference")

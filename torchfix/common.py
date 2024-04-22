@@ -1,10 +1,11 @@
-from dataclasses import dataclass
 import sys
-import libcst as cst
-from libcst.metadata import QualifiedNameProvider, WhitespaceInclusivePositionProvider
-from libcst.codemod.visitors import ImportItem
-from typing import Optional, List, Set, Tuple, Union
 from abc import ABC
+from dataclasses import dataclass
+from typing import List, Optional, Set, Tuple
+
+import libcst as cst
+from libcst.codemod.visitors import ImportItem
+from libcst.metadata import QualifiedNameProvider, WhitespaceInclusivePositionProvider
 
 IS_TTY = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
 CYAN = "\033[96m" if IS_TTY else ""
@@ -34,13 +35,24 @@ class LintViolation:
         return f"{position} {error_code}{fixable} {self.message}"
 
 
+@dataclass(frozen=True)
+class TorchError:
+    """Defines an error along with an explanation"""
+
+    error_code: str
+    message_template: str
+
+    def message(self, **kwargs):
+        return self.message_template.format(**kwargs)
+
+
 class TorchVisitor(cst.BatchableCSTVisitor, ABC):
     METADATA_DEPENDENCIES = (
         QualifiedNameProvider,
         WhitespaceInclusivePositionProvider,
     )
 
-    ERROR_CODE: Union[str, List[str]]
+    ERRORS: List[TorchError]
 
     def __init__(self) -> None:
         self.violations: List[LintViolation] = []

@@ -1,7 +1,6 @@
 import libcst.matchers as m
 
-
-from ...common import TorchVisitor
+from ...common import TorchError, TorchVisitor
 
 
 class TorchSynchronizedDataLoaderVisitor(TorchVisitor):
@@ -10,12 +9,16 @@ class TorchSynchronizedDataLoaderVisitor(TorchVisitor):
     https://github.com/pytorch/pytorch/blob/main/torch/profiler/_pattern_matcher.py
     """
 
-    ERROR_CODE = "TOR401"
-    MESSAGE = (
-        "Detected DataLoader running with synchronized implementation. "
-        "Please enable asynchronous dataloading by setting num_workers > 0 when "
-        "initializing DataLoader."
-    )
+    ERRORS = [
+        TorchError(
+            "TOR401",
+            (
+                "Detected DataLoader running with synchronized implementation."
+                " Please enable asynchronous dataloading by setting "
+                "num_workers > 0 when initializing DataLoader."
+            ),
+        )
+    ]
 
     def visit_Call(self, node):
         qualified_name = self.get_qualified_name_for_call(node)
@@ -25,5 +28,7 @@ class TorchSynchronizedDataLoaderVisitor(TorchVisitor):
                 num_workers_arg.value, m.Integer(value="0")
             ):
                 self.add_violation(
-                    node, error_code=self.ERROR_CODE, message=self.MESSAGE
+                    node,
+                    error_code=self.ERRORS[0].error_code,
+                    message=self.ERRORS[0].message(),
                 )

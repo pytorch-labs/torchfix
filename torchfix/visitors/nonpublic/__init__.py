@@ -1,10 +1,10 @@
 from os.path import commonprefix
-from typing import Sequence
+from typing import Sequence, List
 
 import libcst as cst
 from libcst.codemod.visitors import ImportItem
 
-from ...common import TorchVisitor
+from ...common import TorchError, TorchVisitor
 
 
 class TorchNonPublicAliasVisitor(TorchVisitor):
@@ -17,7 +17,20 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
     see https://github.com/pytorch/pytorch/pull/69862/files
     """
 
-    ERROR_CODE = ["TOR104", "TOR105"]
+    ERRORS: List[TorchError] = [
+        TorchError(
+            "TOR104", (
+                "Use of non-public function `{qualified_name}`, "
+                "please use `{public_name}` instead"
+            ),
+        ),
+        TorchError(
+            "TOR105", (
+                "Import of non-public function `{qualified_name}`, "
+                "please use `{public_name}` instead"
+            ),
+        ),
+    ]
 
     # fmt: off
     ALIASES = {
@@ -33,8 +46,10 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
 
         if qualified_name in self.ALIASES:
             public_name = self.ALIASES[qualified_name]
-            error_code = self.ERROR_CODE[0]
-            message = f"Use of non-public function `{qualified_name}`, please use `{public_name}` instead"  # noqa: E501
+            error_code = self.ERRORS[0].error_code
+            message = self.ERRORS[0].message(
+                qualified_name=qualified_name, public_name=public_name
+            )
 
             call_name = cst.helpers.get_full_name_for_node(node)
             replacement = None
@@ -74,8 +89,10 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
             qualified_name = f"{module}.{name.name.value}"
             if qualified_name in self.ALIASES:
                 public_name = self.ALIASES[qualified_name]
-                error_code = self.ERROR_CODE[1]
-                message = f"Import of non-public function `{qualified_name}`, please use `{public_name}` instead"  # noqa: E501
+                error_code = self.ERRORS[1].error_code
+                message = self.ERRORS[1].message(
+                    qualified_name=qualified_name, public_name=public_name
+                )
 
                 new_module = ".".join(public_name.split(".")[:-1])
                 new_name = public_name.split(".")[-1]
