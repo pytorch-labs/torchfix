@@ -12,11 +12,15 @@ torchvision.models.detection.ssdlite320_mobilenet_v3_large(pretrained=True, pret
 pretrained = random.choice([False, True])
 # can't codemod, but can report
 torchvision.models.resnet50(pretrained=pretrained)
+torchvision.models.resnet18(pretrained=pretrained)
 
 # ok
 from torchvision.models import ResNet50_Weights
 torchvision.models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
 torchvision.models.resnet50(weights=None)
+torchvision.models.detection.resnet_fpn_backbone(pretrained=pretrained)
+torchvision.models.detection.resnet_fpn_backbone(pretrained=pretrained, pretrained_backbone=True)
+
 
 # Make sure no false positives on non-model functions
 from torchvision.models.vgg import make_layers, cfgs
