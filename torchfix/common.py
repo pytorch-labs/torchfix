@@ -81,7 +81,7 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
             node: cst.Call, arg_name: str, position: Optional[int] = None
     ) -> bool:
         """
-        Check if a named argument is present in a call (not positional).
+        Check if the specific argument is present in a call.
         """
         return TorchVisitor.get_specific_arg(
             node, arg_name,
