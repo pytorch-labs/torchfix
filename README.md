@@ -69,6 +69,13 @@ To get the LU factorization see `torch.lu`, which can be used with `torch.lu_sol
 
 `X = torch.solve(B, A).solution` should be replaced with `X = torch.linalg.solve(A, B)`.
 
+#### torch.backends.cuda.sdp_kernel
+
+This function is deprecated. Use the `torch.nn.attention.sdpa_kernel` context manager instead.
+
+Migration guide:
+Each boolean input parameter (defaulting to true unless specified) of `sdp_kernel` corresponds to a `SDPBackened`. If the input parameter is true, the corresponding backened should be added to the input list of `sdpa_kernel`.
+
 ### TOR002 Likely typo `require_grad` in assignment. Did you mean `requires_grad`?
 
 This is a common misspelling that can lead to silent performance issues.

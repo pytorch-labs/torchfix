@@ -65,6 +65,11 @@
   remove_pr:
   reference: https://github.com/pytorch-labs/torchfix#torchnnutilsweight_norm
 
+- name: torch.backends.cuda.sdp_kernel
+  deprecate_pr: https://github.com/pytorch/pytorch/pull/114689
+  remove_pr:
+  reference: https://github.com/pytorch-labs/torchfix#torchbackendscudasdp_kernel
+
 # functorch
 - name: functorch.vmap
   deprecate_pr: TBA
