@@ -59,20 +59,19 @@ class TorchReentrantCheckpointVisitor(TorchVisitor):
     ]
 
     def visit_Call(self, node):
-        qualified_name = self.get_qualified_name_for_call(node)
-        if qualified_name == "torch.utils.checkpoint.checkpoint":
-            use_reentrant_arg = self.get_specific_arg(node, "use_reentrant", -1)
-            if use_reentrant_arg is None:
-                # This codemod maybe  unsafe correctness-wise
-                # if reentrant behavior is actually needed,
-                # so the changes need to be verified/tested.
-                use_reentrant_arg = cst.ensure_type(
-                    cst.parse_expression("f(use_reentrant=False)"), cst.Call
-                ).args[0]
-                replacement = node.with_changes(args=node.args + (use_reentrant_arg,))
-                self.add_violation(
-                    node,
-                    error_code=self.ERRORS[0].error_code,
-                    message=self.ERRORS[0].message(),
-                    replacement=replacement,
-                )
+        if (self.get_qualified_name_for_call(node) ==
+                "torch.utils.checkpoint.checkpoint" and
+                not self.has_specific_arg(node, "use_reentrant")):
+            # This codemod maybe  unsafe correctness-wise
+            # if reentrant behavior is actually needed,
+            # so the changes need to be verified/tested.
+            use_reentrant_arg = cst.ensure_type(
+                cst.parse_expression("f(use_reentrant=False)"), cst.Call
+            ).args[0]
+            replacement = node.with_changes(args=node.args + (use_reentrant_arg,))
+            self.add_violation(
+                node,
+                error_code=self.ERRORS[0].error_code,
+                message=self.ERRORS[0].message(),
+                replacement=replacement,
+            )

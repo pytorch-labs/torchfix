@@ -62,7 +62,10 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
     def get_specific_arg(
         node: cst.Call, arg_name: str, arg_pos: int
     ) -> Optional[cst.Arg]:
-        # `arg_pos` is zero-based.
+        """
+        :param arg_pos: `arg_pos` is zero-based. -1 means it's a keyword argument.
+        :note: consider using `has_specific_arg` if you only need to check for presence.
+        """
         curr_pos = 0
         for arg in node.args:
             if arg.keyword is None:
@@ -72,6 +75,18 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
             elif arg.keyword.value == arg_name:
                 return arg
         return None
+
+    @staticmethod
+    def has_specific_arg(
+            node: cst.Call, arg_name: str, position: Optional[int] = None
+    ) -> bool:
+        """
+        Check if the specific argument is present in a call.
+        """
+        return TorchVisitor.get_specific_arg(
+            node, arg_name,
+            position if position is not None else -1
+        ) is not None
 
     def add_violation(
         self,
