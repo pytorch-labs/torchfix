@@ -1,7 +1,7 @@
 import sys
 from abc import ABC
 from dataclasses import dataclass
-from typing import List, Optional, Set, Tuple, Union
+from typing import List, Optional, Set, Tuple
 
 import libcst as cst
 from libcst.codemod.visitors import ImportItem
