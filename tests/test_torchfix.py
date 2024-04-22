@@ -62,8 +62,8 @@ def test_errorcodes_distinct():
     seen = set()
     for visitor in visitors:
         LOGGER.info("Checking error code for %s", visitor.__class__.__name__)
-        error_code = visitor.ERROR_CODE
-        for e in error_code if isinstance(error_code, list) else [error_code]:
+        errors = visitor.ERRORS
+        for e in errors:
             assert e not in seen
             seen.add(e)
 

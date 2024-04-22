@@ -3,7 +3,7 @@ from typing import Optional
 import libcst as cst
 from libcst.codemod.visitors import ImportItem
 
-from ...common import TorchVisitor
+from ...common import TorchError, TorchVisitor
 
 
 class TorchVisionDeprecatedPretrainedVisitor(TorchVisitor):
@@ -16,7 +16,12 @@ class TorchVisionDeprecatedPretrainedVisitor(TorchVisitor):
     otherwise only lint violation is emitted.
     """
 
-    ERROR_CODE = "TOR201"
+    ERRORS = [
+        TorchError(
+            "TOR201",
+            "Parameter `{old_arg_name}` is deprecated, please use `{new_arg_name}` instead.",
+        )
+    ]
 
     # flake8: noqa: E105
     # fmt: off
@@ -215,13 +220,17 @@ class TorchVisionDeprecatedPretrainedVisitor(TorchVisitor):
             message = None
             pretrained_arg = self.get_specific_arg(node, "pretrained", 0)
             if pretrained_arg is not None:
-                message = "Parameter `pretrained` is deprecated, please use `weights` instead."
+                message = self.ERRORS[0].message(
+                    old_arg_name="pretrained", new_arg_name="weights"
+                )
 
             pretrained_backbone_arg = self.get_specific_arg(
                 node, "pretrained_backbone", 1
             )
             if pretrained_backbone_arg is not None:
-                message = "Parameter `pretrained_backbone` is deprecated, please use `weights_backbone` instead."
+                message = self.ERRORS[0].message(
+                    old_arg_name="pretrained_backbone", new_arg_name="weights_backbone"
+                )
 
             replacement_args = list(node.args)
 
@@ -250,7 +259,7 @@ class TorchVisionDeprecatedPretrainedVisitor(TorchVisitor):
             if message is not None:
                 self.add_violation(
                     node,
-                    error_code=self.ERROR_CODE,
+                    error_code=self.ERRORS[0].error_code,
                     message=message,
                     replacement=replacement,
                 )

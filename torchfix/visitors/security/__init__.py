@@ -1,5 +1,6 @@
 import libcst as cst
-from ...common import TorchVisitor
+
+from ...common import TorchError, TorchVisitor
 
 
 class TorchUnsafeLoadVisitor(TorchVisitor):
@@ -8,13 +9,17 @@ class TorchUnsafeLoadVisitor(TorchVisitor):
     See https://github.com/pytorch/pytorch/issues/31875.
     """
 
-    ERROR_CODE = "TOR102"
-    MESSAGE = (
-        "`torch.load` without `weights_only` parameter is unsafe. "
-        "Explicitly set `weights_only` to False only if you trust the data you load "
-        "and full pickle functionality is needed, otherwise set "
-        "`weights_only=True`."
-    )
+    ERRORS = [
+        TorchError(
+            "TOR102",
+            (
+                "`torch.load` without `weights_only` parameter is unsafe. "
+                "Explicitly set `weights_only` to False only if you trust the data you load "
+                "and full pickle functionality is needed, otherwise set "
+                "`weights_only=True`."
+            ),
+        )
+    ]
 
     def visit_Call(self, node):
         qualified_name = self.get_qualified_name_for_call(node)
@@ -40,7 +45,7 @@ class TorchUnsafeLoadVisitor(TorchVisitor):
                     )
                 self.add_violation(
                     node,
-                    error_code=self.ERROR_CODE,
-                    message=self.MESSAGE,
+                    error_code=self.ERRORS[0].error_code,
+                    message=self.ERRORS[0].message(),
                     replacement=replacement,
                 )
