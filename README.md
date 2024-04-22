@@ -103,5 +103,12 @@ Migration guide:
     `torch.nn.utils.parametrize.cached` before invoking the module
     in question.
 
+#### torch.backends.cuda.sdp_kernel
+
+This function is deprecated. Use the `torch.nn.attention.sdpa_kernel` context manager instead.
+
+Migration guide:
+Each boolean input parameter (defaulting to true unless specified) of `sdp_kernel` corresponds to a `SDPBackened`. If the input parameter is true, the corresponding backend should be added to the input list of `sdpa_kernel`.
+
 ## License
 TorchFix is BSD License licensed, as found in the LICENSE file.
