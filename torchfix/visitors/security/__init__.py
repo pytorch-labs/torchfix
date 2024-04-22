@@ -33,8 +33,7 @@ class TorchUnsafeLoadVisitor(TorchVisitor):
             # even without `pickle_module`,
             # so the changes need to be verified/tested.
             replacement = None
-            pickle_module_arg = self.get_specific_arg(node, "pickle_module", 2)
-            if pickle_module_arg is None:
+            if not self.has_specific_arg(node, "pickle_module", 2):
                 weights_only_arg = cst.ensure_type(
                     cst.parse_expression("f(weights_only=True)"), cst.Call
                 ).args[0]
