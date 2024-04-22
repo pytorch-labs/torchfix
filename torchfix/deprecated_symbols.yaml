@@ -65,6 +65,11 @@
   remove_pr:
   reference: https://github.com/pytorch-labs/torchfix#torchnnutilsweight_norm
 
+- name: torch.utils._pytree._register_pytree_node
+  deprecate_pr: https://github.com/pytorch/pytorch/pull/112111
+  remove_pr:
+  replacement: torch.utils._pytree.register_pytree_node
+
 - name: torch.backends.cuda.sdp_kernel
   deprecate_pr: https://github.com/pytorch/pytorch/pull/114689
   remove_pr:
