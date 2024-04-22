@@ -59,9 +59,11 @@ class TorchReentrantCheckpointVisitor(TorchVisitor):
     ]
 
     def visit_Call(self, node):
-        if (self.get_qualified_name_for_call(node) ==
-                "torch.utils.checkpoint.checkpoint" and
-                not self.has_specific_arg(node, "use_reentrant")):
+        if self.get_qualified_name_for_call(
+            node
+        ) == "torch.utils.checkpoint.checkpoint" and not self.has_specific_arg(
+            node, "use_reentrant"
+        ):
             # This codemod maybe  unsafe correctness-wise
             # if reentrant behavior is actually needed,
             # so the changes need to be verified/tested.
