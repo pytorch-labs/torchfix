@@ -15,15 +15,17 @@ class TorchUnsafeLoadVisitor(TorchVisitor):
             (
                 "`torch.load` without `weights_only` parameter is unsafe. "
                 "Explicitly set `weights_only` to False only if you trust "
-                "the data you load " "and full pickle functionality is needed,"
+                "the data you load "
+                "and full pickle functionality is needed,"
                 " otherwise set `weights_only=True`."
             ),
         )
     ]
 
     def visit_Call(self, node):
-        if self.get_qualified_name_for_call(node) == "torch.load" and \
-                not self.has_specific_arg(node, "weights_only"):
+        if self.get_qualified_name_for_call(
+            node
+        ) == "torch.load" and not self.has_specific_arg(node, "weights_only"):
             # Add `weights_only=True` if there is no `pickle_module`.
             # (do not add `weights_only=False` with `pickle_module`, as it
             # needs to be an explicit choice).
@@ -37,9 +39,7 @@ class TorchUnsafeLoadVisitor(TorchVisitor):
                 weights_only_arg = cst.ensure_type(
                     cst.parse_expression("f(weights_only=True)"), cst.Call
                 ).args[0]
-                replacement = node.with_changes(
-                    args=node.args + (weights_only_arg,)
-                )
+                replacement = node.with_changes(args=node.args + (weights_only_arg,))
             self.add_violation(
                 node,
                 error_code=self.ERRORS[0].error_code,

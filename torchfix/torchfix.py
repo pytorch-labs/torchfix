@@ -48,7 +48,7 @@ ALL_VISITOR_CLS = [
 def GET_ALL_ERROR_CODES():
     codes = set()
     for cls in ALL_VISITOR_CLS:
-        codes |= set(error.error_code for error in cls.ERRORS)
+        codes |= {error.error_code for error in cls.ERRORS}
     return codes
 
 
@@ -83,7 +83,7 @@ def get_visitors_with_error_codes(error_codes):
         # only correspond to one visitor.
         found = False
         for visitor_cls in ALL_VISITOR_CLS:
-            if error_code in list(err.error_code for err in visitor_cls.ERRORS):
+            if any(error_code == err.error_code for err in visitor_cls.ERRORS):
                 visitor_classes.add(visitor_cls)
                 found = True
                 break

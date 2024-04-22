@@ -78,15 +78,17 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
 
     @staticmethod
     def has_specific_arg(
-            node: cst.Call, arg_name: str, position: Optional[int] = None
+        node: cst.Call, arg_name: str, position: Optional[int] = None
     ) -> bool:
         """
         Check if the specific argument is present in a call.
         """
-        return TorchVisitor.get_specific_arg(
-            node, arg_name,
-            position if position is not None else -1
-        ) is not None
+        return (
+            TorchVisitor.get_specific_arg(
+                node, arg_name, position if position is not None else -1
+            )
+            is not None
+        )
 
     def add_violation(
         self,

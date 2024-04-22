@@ -19,13 +19,15 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
 
     ERRORS: List[TorchError] = [
         TorchError(
-            "TOR104", (
+            "TOR104",
+            (
                 "Use of non-public function `{qualified_name}`, "
                 "please use `{public_name}` instead"
             ),
         ),
         TorchError(
-            "TOR105", (
+            "TOR105",
+            (
                 "Import of non-public function `{qualified_name}`, "
                 "please use `{public_name}` instead"
             ),
