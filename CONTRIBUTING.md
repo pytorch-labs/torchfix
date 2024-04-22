@@ -14,9 +14,33 @@ We actively welcome your pull requests.
 1. Fork the repo and create your branch from `main`.
 2. If you've added code that should be tested, add tests.
 3. If you've changed APIs, update the documentation.
-4. Ensure the test suite passes.
-5. Make sure your code lints.
+4. Ensure the test suite passes (`pytest tests`).
+5. Make sure your code lints (see Linting section below).
 6. If you haven't already, complete the Contributor License Agreement ("CLA").
+
+## Linting
+
+We use `black`, `flake8`, and `mypy` to lint the code.
+```
+pip install -r requirements-dev.txt
+```
+
+Linting via pre-commit hook:
+```
+# install pre-commit hooks for the first time
+pre-commit install
+
+# manually run pre-commit hooks on all files (runs all linters)
+pre-commit run --all-files
+```
+
+Manually running individual linters:
+```
+black .
+flake8
+mypy .
+```
+
 
 ## Contributor License Agreement ("CLA")
 
