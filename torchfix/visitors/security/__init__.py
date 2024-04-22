@@ -14,9 +14,9 @@ class TorchUnsafeLoadVisitor(TorchVisitor):
             "TOR102",
             (
                 "`torch.load` without `weights_only` parameter is unsafe. "
-                "Explicitly set `weights_only` to False only if you trust the data you load "
-                "and full pickle functionality is needed, otherwise set "
-                "`weights_only=True`."
+                "Explicitly set `weights_only` to False only if you trust "
+                "the data you load " "and full pickle functionality is needed,"
+                " otherwise set `weights_only=True`."
             ),
         )
     ]

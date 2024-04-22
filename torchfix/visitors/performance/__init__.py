@@ -13,9 +13,9 @@ class TorchSynchronizedDataLoaderVisitor(TorchVisitor):
         TorchError(
             "TOR401",
             (
-                "Detected DataLoader running with synchronized implementation. "
-                "Please enable asynchronous dataloading by setting num_workers > 0 when "
-                "initializing DataLoader."
+                "Detected DataLoader running with synchronized implementation."
+                " Please enable asynchronous dataloading by setting "
+                "num_workers > 0 when initializing DataLoader."
             ),
         )
     ]

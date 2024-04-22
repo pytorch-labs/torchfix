@@ -10,8 +10,10 @@ class TorchScopedLibraryVisitor(TorchVisitor):
         TorchError(
             "TOR901",
             (
-                "Use `torch.library._scoped_library` instead of `torch.library.Library` "
-                "in PyTorch tests files. See https://github.com/pytorch/pytorch/pull/118318 "
+                "Use `torch.library._scoped_library` "
+                "instead of `torch.library.Library` "
+                "in PyTorch tests files. "
+                "See https://github.com/pytorch/pytorch/pull/118318 "
                 "for details."
             ),
         )
