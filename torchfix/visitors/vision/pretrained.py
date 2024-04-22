@@ -148,6 +148,8 @@ class TorchVisionDeprecatedPretrainedVisitor(TorchVisitor):
         ("detection.ssdlite320_mobilenet_v3_large", "pretrained_backbone"): "MobileNet_V3_Large_Weights.IMAGENET1K_V1",
         ("detection.resnet_fpn_backbone", "pretrained"): "ResNet50_Weights.DEFAULT",
         ("detection.resnet_fpn_backbone", "pretrained_backbone"): "ResNet50_Weights.DEFAULT",
+        ("quantization.resnet18", "pretrained"): "ResNet18_Weights.IMAGENET1K_V1",
+        ("quantization.resnet18", "pretrained_backbone"): "ResNet18_Weights.IMAGENET1K_V1",
     }
     # fmt: on
 

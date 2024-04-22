@@ -15,7 +15,8 @@ torchvision.models.resnet50(pretrained=pretrained)
 torchvision.models.resnet18(pretrained=pretrained)
 torchvision.models.detection.resnet_fpn_backbone(pretrained=pretrained)
 torchvision.models.detection.resnet_fpn_backbone(pretrained=pretrained, pretrained_backbone=True)
-
+torchvision.models.quantization.resnet18(pretrained=pretrained)
+torchvision.models.quantization.resnet18(pretrained=pretrained, pretrained_backbone=True)
 # ok
 from torchvision.models import ResNet50_Weights
 torchvision.models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
