@@ -18,8 +18,14 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
     """
 
     ERRORS: List[TorchError] = [
-        TorchError("TOR104", "Use of non-public function `{qualified_name}`, please use `{public_name}` instead"),
-        TorchError("TOR105", "Import of non-public function `{qualified_name}`, please use `{public_name}` instead")
+        TorchError(
+            "TOR104",
+            "Use of non-public function `{qualified_name}`, please use `{public_name}` instead",
+        ),
+        TorchError(
+            "TOR105",
+            "Import of non-public function `{qualified_name}`, please use `{public_name}` instead",
+        ),
     ]
 
     # fmt: off
@@ -37,7 +43,9 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
         if qualified_name in self.ALIASES:
             public_name = self.ALIASES[qualified_name]
             error_code = self.ERRORS[0].error_code
-            message = self.ERRORS[0].message(qualified_name=qualified_name, public_name=public_name)
+            message = self.ERRORS[0].message(
+                qualified_name=qualified_name, public_name=public_name
+            )
 
             call_name = cst.helpers.get_full_name_for_node(node)
             replacement = None
@@ -78,7 +86,9 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
             if qualified_name in self.ALIASES:
                 public_name = self.ALIASES[qualified_name]
                 error_code = self.ERRORS[1].error_code
-                message = self.ERRORS[1].message(qualified_name=qualified_name, public_name=public_name)
+                message = self.ERRORS[1].message(
+                    qualified_name=qualified_name, public_name=public_name
+                )
 
                 new_module = ".".join(public_name.split(".")[:-1])
                 new_name = public_name.split(".")[-1]

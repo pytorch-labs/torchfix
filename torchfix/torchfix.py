@@ -14,7 +14,7 @@ from .visitors.deprecated_symbols import (
 from .visitors.internal import TorchScopedLibraryVisitor
 
 from .visitors.performance import TorchSynchronizedDataLoaderVisitor
-from .visitors.misc import (TorchRequireGradVisitor, TorchReentrantCheckpointVisitor)
+from .visitors.misc import TorchRequireGradVisitor, TorchReentrantCheckpointVisitor
 from .visitors.nonpublic import TorchNonPublicAliasVisitor
 
 from .visitors.vision import (
@@ -111,8 +111,10 @@ def process_error_code_str(code_str):
         if c == "ALL":
             continue
         if len(expand_error_codes((c,))) == 0:
-            raise ValueError(f"Invalid error code: {c}, available error "
-                             f"codes: {list(GET_ALL_ERROR_CODES())}")
+            raise ValueError(
+                f"Invalid error code: {c}, available error "
+                f"codes: {list(GET_ALL_ERROR_CODES())}"
+            )
 
     if "ALL" in raw_codes:
         return GET_ALL_ERROR_CODES()

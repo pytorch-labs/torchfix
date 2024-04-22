@@ -21,5 +21,7 @@ class TorchScopedLibraryVisitor(TorchVisitor):
         qualified_name = self.get_qualified_name_for_call(node)
         if qualified_name == "torch.library.Library":
             self.add_violation(
-                node, error_code=self.ERRORS[0].error_code, message=self.ERRORS[0].message()
+                node,
+                error_code=self.ERRORS[0].error_code,
+                message=self.ERRORS[0].message(),
             )

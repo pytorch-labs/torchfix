@@ -63,16 +63,12 @@ def main() -> None:
     parser.add_argument(
         "--select",
         help=f"Comma-separated list of rules to enable or 'ALL' to enable all rules. "
-             f"Available rules: {', '.join(list(GET_ALL_ERROR_CODES()))}. "
-             f"Defaults to all except for {', '.join(DISABLED_BY_DEFAULT)}.",
+        f"Available rules: {', '.join(list(GET_ALL_ERROR_CODES()))}. "
+        f"Defaults to all except for {', '.join(DISABLED_BY_DEFAULT)}.",
         type=str,
         default=None,
     )
-    parser.add_argument(
-        "--version",
-        action="version",
-        version=f"{TorchFixVersion}"
-    )
+    parser.add_argument("--version", action="version", version=f"{TorchFixVersion}")
 
     # XXX TODO: Get rid of this!
     # Silence "Failed to determine module name"

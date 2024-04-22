@@ -21,7 +21,7 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
         TorchError("TOR001", "Use of removed function {qualified_name}"),
         TorchError("TOR101", "Import of deprecated function {qualified_name}"),
         TorchError("TOR004", "Import of removed function {qualified_name}"),
-        TorchError("TOR103", "Import of deprecated function {qualified_name}")
+        TorchError("TOR103", "Import of deprecated function {qualified_name}"),
     ]
 
     def __init__(self, deprecated_config_path=None):
