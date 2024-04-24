@@ -19,7 +19,7 @@ from .qr import call_replacement_qr
 class TorchDeprecatedSymbolsVisitor(TorchVisitor):
     ERRORS: List[TorchError] = [
         TorchError("TOR001", "Use of removed function {qualified_name}"),
-        TorchError("TOR101", "Import of deprecated function {qualified_name}"),
+        TorchError("TOR101", "Use of deprecated function {qualified_name}"),
         TorchError("TOR004", "Import of removed function {qualified_name}"),
         TorchError("TOR103", "Import of deprecated function {qualified_name}"),
     ]
@@ -94,7 +94,6 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
             if self.deprecated_config[qualified_name]["remove_pr"] is None:
                 error_code = self.ERRORS[1].error_code
                 message = self.ERRORS[1].message(qualified_name=qualified_name)
-                message = f"Use of deprecated function {qualified_name}"
             else:
                 error_code = self.ERRORS[0].error_code
                 message = self.ERRORS[0].message(qualified_name=qualified_name)
