@@ -6,11 +6,7 @@ import libcst as cst
 import libcst.codemod as codemod
 
 from .common import deep_multi_replace
-from .visitors.deprecated_symbols import (
-    TorchDeprecatedSymbolsVisitor,
-    _UpdateFunctorchImports,
-)
-
+from .visitors.deprecated_symbols import TorchDeprecatedSymbolsVisitor
 from .visitors.internal import TorchScopedLibraryVisitor
 
 from .visitors.performance import TorchSynchronizedDataLoaderVisitor
@@ -223,10 +219,7 @@ class TorchCodemod(codemod.Codemod):
         )
         new_module = new_module.visit(add_imports_visitor)
 
-        update_functorch_imports_visitor = _UpdateFunctorchImports()
-        new_module = new_module.visit(update_functorch_imports_visitor)
-
-        if fixes_count == 0 and not update_functorch_imports_visitor.changed:
+        if fixes_count == 0:
             raise codemod.SkipFile("No changes")
 
         return new_module

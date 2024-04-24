@@ -1,5 +1,5 @@
 import torch
-from torch import outer, ger
+from torch import outer
 deprecated = torch.norm()
 sinusoid_inp = torch.outer(pos_seq, inv_freq)
 other = something.ger(pos_seq, inv_freq)

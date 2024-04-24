@@ -1,7 +1,8 @@
 import sys
 from abc import ABC
 from dataclasses import dataclass
-from typing import List, Optional, Set, Tuple
+from os.path import commonprefix
+from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 import libcst as cst
 from libcst.codemod.visitors import ImportItem
@@ -175,6 +176,92 @@ def call_with_name_changes(
         return None
     else:
         return replacement, needed_imports
+
+def new_call_with_name_changes(
+    node: cst.Call, qualified_name: str, new_qualified_name: str
+) -> Optional[Tuple[cst.Call, Set[ImportItem]]]:
+    """
+    Return an optional tuple:
+    new `Call` node with name changes
+    and a set of newly needed imports.
+    """
+    needed_imports: Set[ImportItem] = set()
+    call_name = cst.helpers.get_full_name_for_node(node)
+    replacement = None
+    if not new_qualified_name.endswith(call_name):
+        # We need to change the call name as it's not a part of the new qualified name.
+        # Get the new call name on the same hierarchical level.
+        new_call_name = new_qualified_name.removeprefix(
+            commonprefix([qualified_name.removesuffix(call_name), new_qualified_name])
+        )
+        new_module_name = new_qualified_name.removesuffix(new_call_name).removesuffix(
+            "."
+        )
+        if new_module_name:
+            needed_imports.add(
+                ImportItem(
+                    module_name=new_module_name,
+                    obj_name=new_call_name.split(".")[0],
+                )
+            )
+        replacement = node.with_changes(
+            func=cst.parse_expression(new_call_name)
+        )
+
+    # Replace with new_qualified_name.
+    if replacement is None:
+        return None
+    else:
+        return replacement, needed_imports
+
+def check_old_names_in_import_from(node: cst.ImportFrom, old_new_name_map: Dict[str, Optional[str]]) -> Tuple[List[str], Optional[cst.ImportFrom]]:
+    """
+    Using `old_new_name_map`, check if there are any old names in the import from.
+    Return a tuple of two elements:
+    1. List of all founds old names.
+    2. Optional replacement for the ImportFrom node.
+    """
+    if node.module is None:
+        return [], None
+
+    old_names: List[str] = []
+    replacement = None
+    if isinstance(node.names, Sequence):
+        new_names: List[str] = []
+        module = cst.helpers.get_full_name_for_node(node.module)
+
+        # `possible_new_modules` and `has_non_updated_names` are used
+        # to decide if we can replace the ImportFrom node.
+        new_modules: Set[str] = set()
+        has_non_updated_names = False
+
+        for name in node.names:
+            qualified_name = f"{module}.{name.name.value}"
+            if qualified_name in old_new_name_map:
+                old_names.append(qualified_name)
+                new_qualified_name = old_new_name_map[qualified_name]
+                if new_qualified_name is not None:
+                    new_module = ".".join(new_qualified_name.split(".")[:-1])
+                    new_name = new_qualified_name.split(".")[-1]
+                    new_names.append(new_name)
+                    new_modules.add(new_module)
+                else:
+                    has_non_updated_names = True
+            else:
+                has_non_updated_names = True
+
+        # Replace only if the new module is the same for all names in the import.
+        if not has_non_updated_names and len(new_modules) == 1:
+            new_module = new_modules.pop()
+            import_aliases = list(node.names)
+            for i in range(len(import_aliases)):
+                import_aliases[i] = import_aliases[i].with_changes(name=cst.Name(new_names[i]))
+            replacement = node.with_changes(
+                module=cst.parse_expression(new_module),  # type: ignore[arg-type] # noqa: E501
+                names=import_aliases,
+            )
+
+    return old_names, replacement
 
 
 def deep_multi_replace(tree, replacement_map):

@@ -7,7 +7,8 @@ from collections.abc import Sequence
 from ...common import (
     TorchVisitor,
     TorchError,
-    call_with_name_changes,
+    new_call_with_name_changes,
+    check_old_names_in_import_from
 )
 
 from .range import call_replacement_range
@@ -18,10 +19,10 @@ from .qr import call_replacement_qr
 
 class TorchDeprecatedSymbolsVisitor(TorchVisitor):
     ERRORS: List[TorchError] = [
-        TorchError("TOR001", "Use of removed function {qualified_name}"),
-        TorchError("TOR101", "Use of deprecated function {qualified_name}"),
-        TorchError("TOR004", "Import of removed function {qualified_name}"),
-        TorchError("TOR103", "Import of deprecated function {qualified_name}"),
+        TorchError("TOR001", "Use of removed function {old_name}"),
+        TorchError("TOR101", "Use of deprecated function {old_name}"),
+        TorchError("TOR004", "Import of removed function {old_name}"),
+        TorchError("TOR103", "Import of deprecated function {old_name}"),
     ]
 
     def __init__(self, deprecated_config_path=None):
@@ -35,6 +36,10 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
 
         super().__init__()
         self.deprecated_config = read_deprecated_config(deprecated_config_path)
+        self.old_new_name_map = {}
+        for name in self.deprecated_config:
+                new_name = self.deprecated_config[name].get("replacement")
+                self.old_new_name_map[name] = new_name
 
     def _call_replacement(
         self, node: cst.Call, qualified_name: str
@@ -55,7 +60,7 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
                 qualified_name, {}
             ).get("replacement", "")
             if function_name_replacement:
-                replacement_and_imports = call_with_name_changes(
+                replacement_and_imports = new_call_with_name_changes(
                     node, qualified_name, function_name_replacement
                 )
                 if replacement_and_imports is not None:
@@ -63,27 +68,32 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
                     self.needed_imports.update(imports)
         return replacement
 
+
     def visit_ImportFrom(self, node: cst.ImportFrom) -> None:
         if node.module is None:
             return
 
-        module = cst.helpers.get_full_name_for_node(node.module)
-        if isinstance(node.names, Sequence):
-            for name in node.names:
-                qualified_name = f"{module}.{name.name.value}"
-                if qualified_name in self.deprecated_config:
-                    if self.deprecated_config[qualified_name]["remove_pr"] is None:
-                        error_code = self.ERRORS[3].error_code
-                        message = self.ERRORS[3].message(qualified_name=qualified_name)
-                    else:
-                        error_code = self.ERRORS[2].error_code
-                        message = self.ERRORS[2].message(qualified_name=qualified_name)
+        old_names, replacement = check_old_names_in_import_from(node, self.old_new_name_map)
+        for qualified_name in old_names:
+            new_name = self.old_new_name_map[qualified_name]
+            if self.deprecated_config[qualified_name]["remove_pr"] is None:
+                error_code = self.ERRORS[3].error_code
+                message = self.ERRORS[3].message(old_name=qualified_name)
+            else:
+                error_code = self.ERRORS[2].error_code
+                message = self.ERRORS[2].message(old_name=qualified_name)
 
-                    reference = self.deprecated_config[qualified_name].get("reference")
-                    if reference is not None:
-                        message = f"{message}: {reference}"
+            reference = self.deprecated_config[qualified_name].get("reference")
+            if reference is not None:
+                message = f"{message}: {reference}"
 
-                    self.add_violation(node, error_code=error_code, message=message)
+            self.add_violation(
+                node,
+                error_code=error_code,
+                message=message,
+                replacement=replacement,
+            )
+
 
     def visit_Call(self, node) -> None:
         qualified_name = self.get_qualified_name_for_call(node)
@@ -93,10 +103,10 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
         if qualified_name in self.deprecated_config:
             if self.deprecated_config[qualified_name]["remove_pr"] is None:
                 error_code = self.ERRORS[1].error_code
-                message = self.ERRORS[1].message(qualified_name=qualified_name)
+                message = self.ERRORS[1].message(old_name=qualified_name)
             else:
                 error_code = self.ERRORS[0].error_code
-                message = self.ERRORS[0].message(qualified_name=qualified_name)
+                message = self.ERRORS[0].message(old_name=qualified_name)
             replacement = self._call_replacement(node, qualified_name)
 
             reference = self.deprecated_config[qualified_name].get("reference")
@@ -106,32 +116,3 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
             self.add_violation(
                 node, error_code=error_code, message=message, replacement=replacement
             )
-
-
-# TODO: refactor/generalize this.
-class _UpdateFunctorchImports(cst.CSTTransformer):
-    REPLACEMENTS = {
-        "vmap",
-        "grad",
-        "vjp",
-        "jvp",
-        "jacrev",
-        "jacfwd",
-        "hessian",
-        "functionalize",
-    }
-
-    def __init__(self):
-        self.changed = False
-
-    def leave_ImportFrom(
-        self, node: cst.ImportFrom, updated_node: cst.ImportFrom
-    ) -> cst.ImportFrom:
-        if (
-            getattr(node.module, "value", None) == "functorch"
-            and isinstance(node.names, Sequence)
-            and all(name.name.value in self.REPLACEMENTS for name in node.names)
-        ):
-            self.changed = True
-            return updated_node.with_changes(module=cst.parse_expression("torch.func"))
-        return updated_node
