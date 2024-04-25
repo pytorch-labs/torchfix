@@ -143,12 +143,20 @@ def call_with_name_changes(
     needed_imports: Set[ImportItem] = set()
     call_name = cst.helpers.get_full_name_for_node(node)
     replacement = None
+
+    alias_prefix = ""
+    if not qualified_name.endswith(call_name):
+        # This means we have an alias (`import from as`).
+        common_suffix = commonprefix([qualified_name[::-1], call_name[::-1]])[::-1]
+        alias_prefix = call_name.removesuffix(common_suffix) + "."
+
     if not new_qualified_name.endswith(call_name):
         # We need to change the call name as it's not a part of the new qualified name.
         # Get the new call name on the same hierarchical level.
         new_call_name = new_qualified_name.removeprefix(
             commonprefix([qualified_name.removesuffix(call_name), new_qualified_name])
         )
+        new_call_name = new_call_name
         new_module_name = new_qualified_name.removesuffix(new_call_name).removesuffix(
             "."
         )
@@ -159,7 +167,9 @@ def call_with_name_changes(
                     obj_name=new_call_name.split(".")[0],
                 )
             )
-        replacement = node.with_changes(func=cst.parse_expression(new_call_name))
+        replacement = node.with_changes(
+            func=cst.parse_expression(alias_prefix + new_call_name)
+        )
 
     # Replace with new_qualified_name.
     if replacement is None:
