@@ -1,10 +1,13 @@
-from os.path import commonprefix
-from typing import Sequence, List
+from typing import List
 
 import libcst as cst
-from libcst.codemod.visitors import ImportItem
 
-from ...common import TorchError, TorchVisitor
+from ...common import (
+    TorchError,
+    TorchVisitor,
+    call_with_name_changes,
+    check_old_names_in_import_from,
+)
 
 
 class TorchNonPublicAliasVisitor(TorchVisitor):
@@ -21,14 +24,14 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
         TorchError(
             "TOR104",
             (
-                "Use of non-public function `{qualified_name}`, "
+                "Use of non-public function `{private_name}`, "
                 "please use `{public_name}` instead"
             ),
         ),
         TorchError(
             "TOR105",
             (
-                "Import of non-public function `{qualified_name}`, "
+                "Import of non-public function `{private_name}`, "
                 "please use `{public_name}` instead"
             ),
         ),
@@ -50,30 +53,17 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
             public_name = self.ALIASES[qualified_name]
             error_code = self.ERRORS[0].error_code
             message = self.ERRORS[0].message(
-                qualified_name=qualified_name, public_name=public_name
+                private_name=qualified_name, public_name=public_name
             )
 
-            call_name = cst.helpers.get_full_name_for_node(node)
-            replacement = None
-            if not public_name.endswith(call_name):
-                # We need to change the call name as it's not in the public name.
-                # Get the new call name on the same hierarchical level.
-                new_call_name = public_name.removeprefix(
-                    commonprefix([qualified_name.removesuffix(call_name), public_name])
-                )
-                new_module_name = public_name.removesuffix(new_call_name).removesuffix(
-                    "."
-                )
-                if new_module_name:
-                    self.needed_imports.add(
-                        ImportItem(
-                            module_name=new_module_name,
-                            obj_name=new_call_name.split(".")[0],
-                        )
-                    )
-                replacement = node.with_changes(
-                    func=cst.parse_expression(new_call_name)
-                )
+            replacement_and_imports = call_with_name_changes(
+                node, qualified_name, public_name
+            )
+            if replacement_and_imports is not None:
+                replacement, imports = replacement_and_imports
+                self.needed_imports.update(imports)
+            else:
+                replacement = None
 
             self.add_violation(
                 node, error_code=error_code, message=message, replacement=replacement
@@ -83,32 +73,16 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
         if node.module is None:
             return
 
-        module = cst.helpers.get_full_name_for_node(node.module)
-        if not isinstance(node.names, Sequence):
-            return
-
-        for name in node.names:
-            qualified_name = f"{module}.{name.name.value}"
-            if qualified_name in self.ALIASES:
-                public_name = self.ALIASES[qualified_name]
-                error_code = self.ERRORS[1].error_code
-                message = self.ERRORS[1].message(
-                    qualified_name=qualified_name, public_name=public_name
-                )
-
-                new_module = ".".join(public_name.split(".")[:-1])
-                new_name = public_name.split(".")[-1]
-                # Replace only if the import statement has no other names
-                if len(node.names) == 1:
-                    replacement = cst.ImportFrom(
-                        module=cst.parse_expression(new_module),  # type: ignore[arg-type] # noqa: E501
-                        names=[cst.ImportAlias(name=cst.Name(new_name))],
-                    )
-                else:
-                    replacement = None
-                self.add_violation(
-                    node,
-                    error_code=error_code,
-                    message=message,
-                    replacement=replacement,
-                )
+        private_names, replacement = check_old_names_in_import_from(node, self.ALIASES)  # type: ignore[arg-type] # noqa: E501
+        for qualified_name in private_names:
+            public_name = self.ALIASES[qualified_name]
+            error_code = self.ERRORS[1].error_code
+            message = self.ERRORS[1].message(
+                private_name=qualified_name, public_name=public_name
+            )
+            self.add_violation(
+                node,
+                error_code=error_code,
+                message=message,
+                replacement=replacement,
+            )
