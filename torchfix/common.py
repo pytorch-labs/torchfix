@@ -142,6 +142,7 @@ def call_with_name_changes(
     """
     needed_imports: Set[ImportItem] = set()
     call_name = cst.helpers.get_full_name_for_node(node)
+    assert call_name is not None
     replacement = None
 
     alias_prefix = ""

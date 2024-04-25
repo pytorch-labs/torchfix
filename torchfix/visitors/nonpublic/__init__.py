@@ -73,7 +73,7 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
         if node.module is None:
             return
 
-        private_names, replacement = check_old_names_in_import_from(node, self.ALIASES)
+        private_names, replacement = check_old_names_in_import_from(node, self.ALIASES)  # type: ignore[arg-type] # noqa: E501
         for qualified_name in private_names:
             public_name = self.ALIASES[qualified_name]
             error_code = self.ERRORS[1].error_code
