@@ -1,10 +1,13 @@
-from os.path import commonprefix
-from typing import Sequence, List
+from typing import List
 
 import libcst as cst
-from libcst.codemod.visitors import ImportItem
 
-from ...common import TorchError, TorchVisitor, new_call_with_name_changes, check_old_names_in_import_from
+from ...common import (
+    TorchError,
+    TorchVisitor,
+    call_with_name_changes,
+    check_old_names_in_import_from,
+)
 
 
 class TorchNonPublicAliasVisitor(TorchVisitor):
@@ -19,13 +22,15 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
 
     ERRORS: List[TorchError] = [
         TorchError(
-            "TOR104", (
+            "TOR104",
+            (
                 "Use of non-public function `{private_name}`, "
                 "please use `{public_name}` instead"
             ),
         ),
         TorchError(
-            "TOR105", (
+            "TOR105",
+            (
                 "Import of non-public function `{private_name}`, "
                 "please use `{public_name}` instead"
             ),
@@ -51,7 +56,7 @@ class TorchNonPublicAliasVisitor(TorchVisitor):
                 private_name=qualified_name, public_name=public_name
             )
 
-            replacement_and_imports = new_call_with_name_changes(
+            replacement_and_imports = call_with_name_changes(
                 node, qualified_name, public_name
             )
             if replacement_and_imports is not None:

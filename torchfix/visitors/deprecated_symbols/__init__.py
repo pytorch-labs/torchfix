@@ -2,13 +2,12 @@ import libcst as cst
 import pkgutil
 import yaml
 from typing import Optional, List
-from collections.abc import Sequence
 
 from ...common import (
     TorchVisitor,
     TorchError,
-    new_call_with_name_changes,
-    check_old_names_in_import_from
+    call_with_name_changes,
+    check_old_names_in_import_from,
 )
 
 from .range import call_replacement_range
@@ -38,8 +37,8 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
         self.deprecated_config = read_deprecated_config(deprecated_config_path)
         self.old_new_name_map = {}
         for name in self.deprecated_config:
-                new_name = self.deprecated_config[name].get("replacement")
-                self.old_new_name_map[name] = new_name
+            new_name = self.deprecated_config[name].get("replacement")
+            self.old_new_name_map[name] = new_name
 
     def _call_replacement(
         self, node: cst.Call, qualified_name: str
@@ -60,7 +59,7 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
                 qualified_name, {}
             ).get("replacement", "")
             if function_name_replacement:
-                replacement_and_imports = new_call_with_name_changes(
+                replacement_and_imports = call_with_name_changes(
                     node, qualified_name, function_name_replacement
                 )
                 if replacement_and_imports is not None:
@@ -68,14 +67,14 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
                     self.needed_imports.update(imports)
         return replacement
 
-
     def visit_ImportFrom(self, node: cst.ImportFrom) -> None:
         if node.module is None:
             return
 
-        old_names, replacement = check_old_names_in_import_from(node, self.old_new_name_map)
+        old_names, replacement = check_old_names_in_import_from(
+            node, self.old_new_name_map
+        )
         for qualified_name in old_names:
-            new_name = self.old_new_name_map[qualified_name]
             if self.deprecated_config[qualified_name]["remove_pr"] is None:
                 error_code = self.ERRORS[3].error_code
                 message = self.ERRORS[3].message(old_name=qualified_name)
@@ -93,7 +92,6 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
                 message=message,
                 replacement=replacement,
             )
-
 
     def visit_Call(self, node) -> None:
         qualified_name = self.get_qualified_name_for_call(node)

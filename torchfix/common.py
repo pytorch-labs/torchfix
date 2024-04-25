@@ -133,51 +133,6 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
 
 
 def call_with_name_changes(
-    node: cst.Call, old_qualified_name: str, new_qualified_name: str
-) -> Optional[Tuple[cst.Call, Set[ImportItem]]]:
-    """
-    Return an optional tuple:
-    new `Call` node with name changes
-    and a set of newly needed imports.
-    """
-    old_begin, _, old_last = old_qualified_name.rpartition(".")
-    new_begin, _, new_last = new_qualified_name.rpartition(".")
-    needed_imports: Set[ImportItem] = set()
-
-    # If the only difference is the last name part.
-    if old_begin == new_begin:
-        if isinstance(node.func, cst.Attribute):
-            replacement = node.with_deep_changes(
-                old_node=node.func.attr,
-                value=new_last,
-            )
-        elif isinstance(node.func, cst.Name):
-            replacement = node.with_deep_changes(
-                old_node=node.func,
-                value=new_last,
-            )
-            needed_imports.add(
-                ImportItem(
-                    module_name=new_begin,
-                    obj_name=new_last,
-                )
-            )
-
-    # If the last name part is the same and
-    # originally called without a dot: don't change the call site,
-    # just change the imports elsewhere.
-    elif old_last == new_last and isinstance(node.func, cst.Name):
-        replacement = None
-
-    # Replace with new_qualified_name.
-    else:
-        replacement = node.with_changes(func=cst.parse_expression(new_qualified_name))
-    if replacement is None:
-        return None
-    else:
-        return replacement, needed_imports
-
-def new_call_with_name_changes(
     node: cst.Call, qualified_name: str, new_qualified_name: str
 ) -> Optional[Tuple[cst.Call, Set[ImportItem]]]:
     """
@@ -204,9 +159,7 @@ def new_call_with_name_changes(
                     obj_name=new_call_name.split(".")[0],
                 )
             )
-        replacement = node.with_changes(
-            func=cst.parse_expression(new_call_name)
-        )
+        replacement = node.with_changes(func=cst.parse_expression(new_call_name))
 
     # Replace with new_qualified_name.
     if replacement is None:
@@ -214,7 +167,10 @@ def new_call_with_name_changes(
     else:
         return replacement, needed_imports
 
-def check_old_names_in_import_from(node: cst.ImportFrom, old_new_name_map: Dict[str, Optional[str]]) -> Tuple[List[str], Optional[cst.ImportFrom]]:
+
+def check_old_names_in_import_from(
+    node: cst.ImportFrom, old_new_name_map: Dict[str, Optional[str]]
+) -> Tuple[List[str], Optional[cst.ImportFrom]]:
     """
     Using `old_new_name_map`, check if there are any old names in the import from.
     Return a tuple of two elements:
@@ -255,7 +211,9 @@ def check_old_names_in_import_from(node: cst.ImportFrom, old_new_name_map: Dict[
             new_module = new_modules.pop()
             import_aliases = list(node.names)
             for i in range(len(import_aliases)):
-                import_aliases[i] = import_aliases[i].with_changes(name=cst.Name(new_names[i]))
+                import_aliases[i] = import_aliases[i].with_changes(
+                    name=cst.Name(new_names[i])
+                )
             replacement = node.with_changes(
                 module=cst.parse_expression(new_module),  # type: ignore[arg-type] # noqa: E501
                 names=import_aliases,
