@@ -36,6 +36,7 @@ exclude = "tests/fixtures/*"
 
 [tool.mypy]
 exclude = ["tests/fixtures", "build"]
+check_untyped_defs = true
 
 [tool.setuptools.dynamic]
 version = {attr = "torchfix.torchfix.__version__"}

@@ -27,9 +27,10 @@ def _codemod_results(source_path):
     config = TorchCodemodConfig(select=list(GET_ALL_ERROR_CODES()))
     context = TorchCodemod(codemod.CodemodContext(filename=source_path), config)
     new_module = codemod.transform_module(context, code)
-    if isinstance(new_module, codemod.TransformFailure):
+    if isinstance(new_module, codemod.TransformSuccess):
+        return new_module.code
+    elif isinstance(new_module, codemod.TransformFailure):
         raise new_module.error
-    return new_module.code
 
 
 def test_empty():

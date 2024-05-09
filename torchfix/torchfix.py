@@ -5,7 +5,7 @@ from typing import Optional, List
 import libcst as cst
 import libcst.codemod as codemod
 
-from .common import deep_multi_replace
+from .common import deep_multi_replace, TorchVisitor
 from .visitors.deprecated_symbols import TorchDeprecatedSymbolsVisitor
 from .visitors.internal import TorchScopedLibraryVisitor
 
@@ -44,6 +44,7 @@ ALL_VISITOR_CLS = [
 def GET_ALL_ERROR_CODES():
     codes = set()
     for cls in ALL_VISITOR_CLS:
+        assert issubclass(cls, TorchVisitor)
         codes |= {error.error_code for error in cls.ERRORS}
     return codes
 
@@ -79,6 +80,7 @@ def get_visitors_with_error_codes(error_codes):
         # only correspond to one visitor.
         found = False
         for visitor_cls in ALL_VISITOR_CLS:
+            assert issubclass(visitor_cls, TorchVisitor)
             if any(error_code == err.error_code for err in visitor_cls.ERRORS):
                 visitor_classes.add(visitor_cls)
                 found = True
