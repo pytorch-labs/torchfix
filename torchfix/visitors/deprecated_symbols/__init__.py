@@ -29,6 +29,7 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
             deprecated_config = {}
             if path is not None:
                 data = pkgutil.get_data("torchfix", path)
+                assert data is not None
                 for item in yaml.load(data, yaml.SafeLoader):
                     deprecated_config[item["name"]] = item
             return deprecated_config

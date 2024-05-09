@@ -39,4 +39,4 @@ class TorchVisionDeprecatedToTensorVisitor(TorchVisitor):
         if len(qualified_names) != 1:
             return
 
-        self._maybe_add_violation(qualified_names.pop().name, node)
+        self._maybe_add_violation(list(qualified_names)[0].name, node)

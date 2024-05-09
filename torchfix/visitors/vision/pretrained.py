@@ -177,7 +177,7 @@ class TorchVisionDeprecatedPretrainedVisitor(TorchVisitor):
 
     def visit_Call(self, node):
         def _new_arg_and_import(
-            old_arg: cst.Arg, is_backbone: bool
+            old_arg: Optional[cst.Arg], is_backbone: bool
         ) -> Optional[cst.Arg]:
             old_arg_name = "pretrained_backbone" if is_backbone else "pretrained"
             if old_arg is None or (model_name, old_arg_name) not in self.MODEL_WEIGHTS:
