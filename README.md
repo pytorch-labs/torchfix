@@ -108,7 +108,63 @@ Migration guide:
 This function is deprecated. Use the `torch.nn.attention.sdpa_kernel` context manager instead.
 
 Migration guide:
+
 Each boolean input parameter (defaulting to true unless specified) of `sdp_kernel` corresponds to a `SDPBackened`. If the input parameter is true, the corresponding backend should be added to the input list of `sdpa_kernel`.
+
+### TOR102 Unsafe use of `torch.load` without weights only parameter
+
+The use of `torch.load` without the `weights_only` parameter is unsafe. Loading an untrusted pickle file may lead to the execution of arbitrary malicious code and potential security issues.
+
+Migration Guide:
+
+Explicitly set `weights_only=False` only if you trust the data you load and full pickle functionality is needed, 
+
+```
+torch.load('<path_to_file>', weights_only=False) 
+```
+otherwise set `weights_only=True`.     
+```
+torch.load('<path_to_file>', weights_only=True)
+```
+
+### TOR104 Use of non-public function
+
+#### torch.utils.data._utils.collate.default_collate
+
+Public functions are well-documented and supported by the library maintainers and the use of the non-public function `torch.utils.data._utils.collate.default_collate` is discouraged as it can can change without notice in future versions, leading to potential breakage in your code.   
+
+Migration Guide:
+
+For better maintainability and compatibility, please use the public function `torch.utils.data.dataloader.default_collate` instead.
+
+### TOR201 Parameter `pretrained` is deprecated, please use `weights` instead.
+
+The parameter `pretrained` has been deprecated in TorchVision models since PyTorch version 1.12.0. The `weights` parameter should be used instead. 
+
+```
+model = SomeModel(weights='<path_or_identifier_to_weights>')
+```
+
+### TOR202 The transform `v2.ToTensor()` is deprecated and will be removed in a future release.
+
+The `transform v2.ToTensor()` is deprecated and will be removed in a future release. Instead, please use `v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)])`.
+
+```
+transform = v2.Compose([v2.ToImage(),v2.ToDtype(torch.float32, scale=True)])
+```
+
+### TOR203 Consider replacing `import torchvision.models as models` with `from torchvision import models`.
+
+Consider replacing `import torchvision.models as models` with `from torchvision import models` to improve clarity, maintainability, and adhere to best practices and reducing potential confusion with other modules or variables named `models`. 
+This can lead to namespace conflicts and explicit import style helps avoid such issues.
+
+### TOR401 Detected DataLoader running with synchronized implementation
+
+Running synchronized implementations on `DataLoader` can lead to loss in data loading performance, especially when dealing with large datasets. A viable solution is to set the `num_workers` parameter to be greater than 0 when initializing the DataLoader class. This would parallelize the loading operations and would significantly increase performance. 
+
+```
+train_loader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=4)
+```
 
 ## License
 TorchFix is BSD License licensed, as found in the LICENSE file.
