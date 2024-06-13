@@ -16,7 +16,7 @@ from .visitors.nonpublic import TorchNonPublicAliasVisitor
 from .visitors.vision import (
     TorchVisionDeprecatedPretrainedVisitor,
     TorchVisionDeprecatedToTensorVisitor,
-    TorchVisionModelsImportVisitor,
+    TorchVisionSingletonImportVisitor,
 )
 from .visitors.security import TorchUnsafeLoadVisitor
 
@@ -33,7 +33,7 @@ ALL_VISITOR_CLS = [
     TorchSynchronizedDataLoaderVisitor,
     TorchVisionDeprecatedPretrainedVisitor,
     TorchVisionDeprecatedToTensorVisitor,
-    TorchVisionModelsImportVisitor,
+    TorchVisionSingletonImportVisitor,
     TorchUnsafeLoadVisitor,
     TorchReentrantCheckpointVisitor,
     TorchNonPublicAliasVisitor,

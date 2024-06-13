@@ -1,0 +1,4 @@
+1:1 TOR203 Consider replacing 'import torchvision.models as models' with 'from torchvision import models'.
+6:1 TOR203 Consider replacing 'import torchvision.models as models' with 'from torchvision import models'.
+7:1 TOR203 Consider replacing 'import torchvision.datasets as datasets' with 'from torchvision import datasets'.
+8:1 TOR203 Consider replacing 'import torchvision.transforms as transforms' with 'from torchvision import transforms'.
