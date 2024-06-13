@@ -4,8 +4,7 @@ import libcst.matchers as m
 from ...common import TorchError, TorchVisitor
 
 
-# TODO (jovaun) change file name and corresponding fixtures
-class TorchVisionModelsImportVisitor(TorchVisitor):
+class TorchVisionSingletonImportVisitor(TorchVisitor):
     ERRORS = [
         TorchError(
             "TOR203",
