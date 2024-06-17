@@ -109,22 +109,26 @@ This function is deprecated. Use the `torch.nn.attention.sdpa_kernel` context ma
 
 Migration guide:
 
-Each boolean input parameter (defaulting to true unless specified) of `sdp_kernel` corresponds to a `SDPBackened`. If the input parameter is true, the corresponding backend should be added to the input list of `sdpa_kernel`.
+Each boolean input parameter (defaulting to true unless specified) of `sdp_kernel` corresponds to a `SDPBackened`. 
+If the input parameter is true, the corresponding backend should be added to the input list of `sdpa_kernel`.
 
 ### TOR102 Unsafe use of `torch.load` without weights only parameter
 
-The use of `torch.load` without the `weights_only` parameter is unsafe. Loading an untrusted pickle file may lead to the execution of arbitrary malicious code and potential security issues.
+The use of `torch.load` without the `weights_only` parameter is unsafe. 
+Loading an untrusted pickle file may lead to the execution of arbitrary malicious code and potential security issues.
 
 Migration Guide:
 
-Explicitly set `weights_only=False` only if you trust the data you load and full pickle functionality is needed, 
+Explicitly set `weights_only=False` only if you trust the data you load and full pickle functionality is needed, otherwise use `weights_only=True`.
 
 
 ### TOR104 Use of non-public function
 
 #### torch.utils.data._utils.collate.default_collate
 
-Public functions are well-documented and supported by the library maintainers and the use of the non-public function `torch.utils.data._utils.collate.default_collate` is discouraged as it can can change without notice in future versions, leading to potential breakage in your code.   
+Public functions are well-documented and supported by the library maintainers and the use of the non-public function 
+`torch.utils.data._utils.collate.default_collate` is discouraged as it can can change without notice in future versions, 
+leading to potential breakage in your code.   
 
 Migration Guide:
 
@@ -148,5 +152,6 @@ This can lead to namespace conflicts and explicit import style helps avoid such 
 ### TOR401 Detected DataLoader running with synchronized implementation
 
 Running synchronized implementations on `DataLoader` can lead to loss in data loading performance, especially when dealing with large datasets. A viable solution is to set the `num_workers` parameter to be greater than 0 when initializing the DataLoader class. This would parallelize the loading operations and would significantly increase performance. 
+
 ## License
 TorchFix is BSD License licensed, as found in the LICENSE file.
