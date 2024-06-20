@@ -153,5 +153,37 @@ This can lead to namespace conflicts and explicit import style helps avoid such 
 
 Running synchronized implementations on `DataLoader` can lead to loss in data loading performance, especially when dealing with large datasets. A viable solution is to set the `num_workers` parameter to be greater than 0 when initializing the DataLoader class. This would parallelize the loading operations and would significantly increase performance. 
 
+#### torch.chain_matmul
+
+This function is deprecated in favor of `torch.linalg.multi_dot`.
+
+Migration guide:
+`multi_dot` accepts a list of two or more tensors whereas `chain_matmul` accepted multiple tensors as input arguments. For migration, convert the multiple tensors in argument of  `chain_matmul` into a list of two or more tensors for `multi_dot`.
+
+Example: Replace `torch.chain_matmul(a, b, c)` with `torch.linalg.multi_dot([a, b, c])`.
+
+#### torch.cholesky
+
+`torch.cholesky()` is deprecated in favor of `torch.linalg.cholesky()`.
+
+Migration guide:
+* `L = torch.cholesky(A)` should be replaced with `L = torch.linalg.cholesky(A)`.
+* `L = torch.cholesky(A, upper=True)` should be replaced with `L = torch.linalg.cholesky(A).mH`
+
+#### torch.qr
+
+`torch.qr()` is deprecated in favor of `torch.linalg.qr()`.
+
+Migration guide:
+* The usage `Q, R = torch.qr(A)` should be replaced with `Q, R = torch.linalg.qr(A)`.
+* The boolean parameter `some` of `torch.qr` is replaced with a string parameter `mode` in `torch.linalg.qr`. The corresponding change in usage is from `Q, R = torch.qr(A, some=False)` to `Q, R = torch.linalg.qr(A, mode="complete")`.
+
+#### torch.range
+
+The function `torch.range()` is deprecated as its usage is incompatible with Python's builtin range. Instead, use `torch.arange()` as it produces values in `[start, end)`.
+
+Migration guide:
+* `torch.range(start, end)` produces values in the range of `[start, end]`. But `torch.arange(start, end)` produces values in `[start, end)`. For step size of 1, migrate usage from `torch.range(start, end, 1)` to `torch.arange(start, end+1, 1)`.
+
 ## License
 TorchFix is BSD License licensed, as found in the LICENSE file.
