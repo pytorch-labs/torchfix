@@ -69,6 +69,36 @@ To get the LU factorization see `torch.lu`, which can be used with `torch.lu_sol
 
 `X = torch.solve(B, A).solution` should be replaced with `X = torch.linalg.solve(A, B)`.
 
+#### torch.symeig
+
+This function was deprecated since PyTorch version 1.9 and is now removed.
+
+`torch.symeig` is deprecated in favor of `torch.linalg.eigh`.
+
+The default behavior has changed from using the upper triangular portion of the matrix by default to using the lower triangular portion.
+
+```python
+L, _ = torch.symeig(A, upper=upper)
+```
+
+should be replaced with
+
+```python
+L = torch.linalg.eigvalsh(A, UPLO='U' if upper else 'L')
+```
+
+and
+
+```python
+L, V = torch.symeig(A, eigenvectors=True)
+```
+
+should be replaced with
+
+```python
+L, V = torch.linalg.eigh(A, UPLO='U' if upper else 'L')
+```
+
 ### TOR002 Likely typo `require_grad` in assignment. Did you mean `requires_grad`?
 
 This is a common misspelling that can lead to silent performance issues.
@@ -80,6 +110,10 @@ from `True` to `False`. In the meantime, the value needs to be passed explicitly
 
 See this [forum post](https://dev-discuss.pytorch.org/t/bc-breaking-update-to-torch-utils-checkpoint-not-passing-in-use-reentrant-flag-will-raise-an-error/1745)
 for details.
+
+### TOR004 Import of removed function
+
+See `TOR001`.
 
 ### TOR101 Use of deprecated function
 
@@ -142,5 +176,14 @@ The function `torch.range()` is deprecated as its usage is incompatible with Pyt
 Migration guide:
 * `torch.range(start, end)` produces values in the range of `[start, end]`. But `torch.arange(start, end)` produces values in `[start, end)`. For step size of 1, migrate usage from `torch.range(start, end, 1)` to `torch.arange(start, end+1, 1)`.
 
+### TOR102 `torch.load` without `weights_only` parameter is unsafe.
+
+Explicitly set `weights_only` to False only if you trust the data you load and full pickle functionality is needed, otherwise set `weights_only=True`.
+
+### TOR103 Import of deprecated function
+
+See `TOR101`.
+
 ## License
+
 TorchFix is BSD License licensed, as found in the LICENSE file.
