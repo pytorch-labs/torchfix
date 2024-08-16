@@ -10,12 +10,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install requirements
-        run: |
-          pip3 install -r requirements-dev.txt
       - name: Install TorchFix
         run: |
-          pip3 install .
+          pip3 install ".[dev]"
       - name: Run pytest
         run: |
           pytest tests

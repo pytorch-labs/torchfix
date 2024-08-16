@@ -20,22 +20,22 @@ We actively welcome your pull requests.
 
 ## Linting
 
-We use `black`, `flake8`, and `mypy` to lint the code.
-```
-pip install -r requirements-dev.txt
+We use `black`, `flake8`, and `mypy` to lint the code. Configuration is available to run lints via `pre-commit`.
+
+```shell
+pip install ".[dev]"
 ```
 
 Linting via pre-commit hook:
-```
-# install pre-commit hooks for the first time
-pre-commit install
 
+```shell
 # manually run pre-commit hooks on all files (runs all linters)
 pre-commit run --all-files
 ```
 
 Manually running individual linters:
-```
+
+```shell
 black .
 flake8
 mypy .
