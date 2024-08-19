@@ -46,7 +46,7 @@ def GET_ALL_ERROR_CODES():
     for cls in ALL_VISITOR_CLS:
         assert issubclass(cls, TorchVisitor)
         codes |= {error.error_code for error in cls.ERRORS}
-    return codes
+    return sorted(codes)
 
 
 @functools.cache
@@ -62,15 +62,12 @@ def expand_error_codes(codes):
 def construct_visitor(cls):
     if cls is TorchDeprecatedSymbolsVisitor:
         return cls(DEPRECATED_CONFIG_PATH)
-    else:
-        return cls()
+
+    return cls()
 
 
 def GET_ALL_VISITORS():
-    out = []
-    for v in ALL_VISITOR_CLS:
-        out.append(construct_visitor(v))
-    return out
+    return [construct_visitor(v) for v in ALL_VISITOR_CLS]
 
 
 def get_visitors_with_error_codes(error_codes):
@@ -87,10 +84,7 @@ def get_visitors_with_error_codes(error_codes):
                 break
         if not found:
             raise AssertionError(f"Unknown error code: {error_code}")
-    out = []
-    for cls in visitor_classes:
-        out.append(construct_visitor(cls))
-    return out
+    return [construct_visitor(cls) for cls in visitor_classes]
 
 
 def process_error_code_str(code_str):
@@ -100,7 +94,7 @@ def process_error_code_str(code_str):
     # Default when --select is not provided.
     if code_str is None:
         exclude_set = expand_error_codes(tuple(DISABLED_BY_DEFAULT))
-        return GET_ALL_ERROR_CODES() - exclude_set
+        return set(GET_ALL_ERROR_CODES()) - exclude_set
 
     raw_codes = [s.strip() for s in code_str.split(",")]
 
