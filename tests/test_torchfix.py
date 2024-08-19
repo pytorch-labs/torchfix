@@ -77,7 +77,7 @@ def test_parse_error_code_str():
         ("TOR102", {"TOR102"}),
         ("TOR102,TOR101", {"TOR102", "TOR101"}),
         ("TOR1,TOR102", {"TOR102", "TOR101", "TOR103", "TOR104", "TOR105"}),
-        (None, GET_ALL_ERROR_CODES() - exclude_set),
+        (None, set(GET_ALL_ERROR_CODES()) - exclude_set),
     ]
     for case, expected in cases:
         assert expected == process_error_code_str(case)
