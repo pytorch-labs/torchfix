@@ -50,9 +50,6 @@ pythonpath = [
 [tool.black]
 exclude = "tests/fixtures/*"
 
-[tool.setuptools.packages.find]
-include = ["torchfix*"]
-
 [tool.setuptools.package-data]
 "*" = ["*.yaml"]
 
