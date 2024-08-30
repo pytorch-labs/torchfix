@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools >= 65.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "TorchFix"
 requires-python = ">=3.9"
@@ -9,7 +13,22 @@ classifiers = [
   "Programming Language :: Python"
 ]
 dynamic = ["version"]
-dependencies = ["flake8>=3.8.2", "PyYAML", "libcst>=1.1.0,<1.2.0"]
+dependencies = [
+  "flake8>=3.8.2",
+  "PyYAML",
+  "libcst>=1.1.0,<1.2.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "flake8==6.0.0",
+  "pytest==7.2.0",
+  "libcst==1.1.0",
+  "types-PyYAML==6.0.7",
+  "mypy==1.7.0",
+  "black==24.4.0",
+  "pre-commit==3.7.0",
+]
 
 [project.urls]
 Repository = "https://github.com/pytorch-labs/torchfix"
