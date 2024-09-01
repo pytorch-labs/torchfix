@@ -65,14 +65,18 @@ def test_checker_fixtures(checker_source_path: Path):
     expected_path = checker_source_path.with_suffix(".txt")
     expected_results = expected_path.read_text().splitlines()
 
-    assert (
-        _checker_results(checker_source_path.read_text().splitlines(keepends=True))
-        == expected_results
+    results = _checker_results(
+        checker_source_path.read_text().splitlines(keepends=True)
     )
+    # Overwrite the expected data with the results (useful when updating tests)
+    # expected_path.write_text("".join([f"{line}\n" for line in results]))
+    assert results == expected_results
 
 
 def test_codemod_fixtures(codemod_source_path: Path):
-    expected_path = codemod_source_path.with_stem(codemod_source_path.stem.replace(".in", ".out"))
+    expected_path = codemod_source_path.with_stem(
+        codemod_source_path.stem.replace(".in", ".out")
+    )
     expected_results = expected_path.read_text()
     assert _codemod_results(codemod_source_path) == expected_results
 
