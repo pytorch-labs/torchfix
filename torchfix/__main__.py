@@ -46,7 +46,7 @@ def main() -> None:
     parser.add_argument(
         "path",
         nargs="+",
-        help=("Path to check/fix. Can be a directory, a file, or multiple of either."),
+        help="Path to check/fix. Can be a directory, a file, or multiple of either.",
     )
     parser.add_argument(
         "--fix",
