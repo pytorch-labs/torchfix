@@ -54,8 +54,6 @@ def call_replacement_range(node: cst.Call) -> Optional[cst.Call]:
         else:
             return None
 
-    updated_end_arg = None
-
     # `end` is a literal (positive) integer
     if isinstance(end_arg.value, cst.Integer):
         end = int(end_arg.value.value) + step

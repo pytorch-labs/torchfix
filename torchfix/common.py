@@ -158,7 +158,6 @@ def call_with_name_changes(
         new_call_name = new_qualified_name.removeprefix(
             commonprefix([qualified_name.removesuffix(call_name), new_qualified_name])
         )
-        new_call_name = new_call_name
         new_module_name = new_qualified_name.removesuffix(new_call_name).removesuffix(
             "."
         )
