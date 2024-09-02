@@ -18,11 +18,10 @@ def call_replacement_range(node: cst.Call) -> Optional[cst.Call]:
         for arg in node.args:
             if arg.keyword is None:
                 non_kw_args.append(arg)
-            else:
-                if arg.keyword.value == "end":
-                    end_arg = arg
-                elif arg.keyword.value == "step":
-                    step_arg = arg
+            elif arg.keyword.value == "end":
+                end_arg = arg
+            elif arg.keyword.value == "step":
+                step_arg = arg
         if end_arg is None:
             if len(non_kw_args) == 1:
                 end_arg = non_kw_args[0]
