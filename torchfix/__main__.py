@@ -40,7 +40,7 @@ def StderrSilencer(redirect: bool = True):
             libc.close(orig_stderr)
 
 
-def main() -> None:
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -78,11 +78,11 @@ def main() -> None:
         action="store_true",
     )
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    if not args.path:
-        parser.print_usage()
-        sys.exit(1)
+
+def main() -> None:
+    args = _parse_args()
 
     files = codemod.gather_files(args.path)
 
