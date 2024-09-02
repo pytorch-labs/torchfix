@@ -26,7 +26,7 @@ class LintViolation:
 
     def flake8_result(self):
         full_message = f"{self.error_code} {self.message}"
-        return (self.line, 1 + self.column, full_message, "TorchFix")
+        return self.line, 1 + self.column, full_message, "TorchFix"
 
     def codemod_result(self) -> str:
         fixable = f" [{CYAN}*{ENDC}]" if self.replacement is not None else ""
