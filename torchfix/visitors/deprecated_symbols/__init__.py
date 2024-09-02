@@ -53,19 +53,19 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
         replacement = None
 
         if qualified_name in replacements_map:
-            replacement = replacements_map[qualified_name](node)
-        else:
-            # Replace names for functions that have drop-in replacement.
-            function_name_replacement = self.deprecated_config.get(
-                qualified_name, {}
-            ).get("replacement", "")
-            if function_name_replacement:
-                replacement_and_imports = call_with_name_changes(
-                    node, qualified_name, function_name_replacement
-                )
-                if replacement_and_imports is not None:
-                    replacement, imports = replacement_and_imports
-                    self.needed_imports.update(imports)
+            return replacements_map[qualified_name](node)
+
+        # Replace names for functions that have drop-in replacement.
+        function_name_replacement = self.deprecated_config.get(qualified_name, {}).get(
+            "replacement", ""
+        )
+        if function_name_replacement:
+            replacement_and_imports = call_with_name_changes(
+                node, qualified_name, function_name_replacement
+            )
+            if replacement_and_imports is not None:
+                replacement, imports = replacement_and_imports
+                self.needed_imports.update(imports)
         return replacement
 
     def visit_ImportFrom(self, node: cst.ImportFrom) -> None:

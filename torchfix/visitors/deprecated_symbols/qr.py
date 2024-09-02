@@ -29,6 +29,4 @@ def call_replacement_qr(node: cst.Call) -> Optional[cst.CSTNode]:
         replacement_args = [input_arg]
     module_name = get_module_name(node, "torch")
     replacement = cst.parse_expression(f"{module_name}.linalg.qr(args)")
-    replacement = replacement.with_changes(args=replacement_args)
-
-    return replacement
+    return replacement.with_changes(args=replacement_args)
