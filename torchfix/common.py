@@ -56,6 +56,7 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
     ERRORS: List[TorchError]
 
     def __init__(self) -> None:
+        super().__init__()
         self.violations: List[LintViolation] = []
         self.needed_imports: Set[ImportItem] = set()
 
@@ -236,6 +237,7 @@ def check_old_names_in_import_from(
 def deep_multi_replace(tree, replacement_map):
     class MultiChildReplacementTransformer(cst.CSTTransformer):
         def __init__(self, replacement_map) -> None:
+            super().__init__()
             self.replacement_map = replacement_map
 
         def on_leave(self, original_node, updated_node):
