@@ -19,9 +19,14 @@ def call_replacement_cholesky(node: cst.Call) -> cst.CSTNode:
         and cst.ensure_type(upper_arg.value, cst.Name).value == "True"
     ):
         replacement = cst.parse_expression(f"{module_name}.linalg.cholesky(A).mH")
+
+        # Make mypy happy
+        assert isinstance(replacement, (cst.Name, cst.Attribute))
+
+        old_node = cst.ensure_type(replacement.value, cst.Call).args
         replacement = replacement.with_deep_changes(
-            # Ignore type error, see https://github.com/Instagram/LibCST/issues/963
-            old_node=cst.ensure_type(replacement.value, cst.Call).args,  # type: ignore
+            # see https://github.com/Instagram/LibCST/issues/963
+            old_node=old_node,  # type: ignore[arg-type]
             value=[input_arg],
         )
     else:

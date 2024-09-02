@@ -2,7 +2,7 @@ import sys
 from abc import ABC
 from dataclasses import dataclass
 from os.path import commonprefix
-from typing import Dict, List, Optional, Sequence, Set, Tuple
+from typing import List, Optional, Sequence, Set, Tuple, Mapping
 
 import libcst as cst
 from libcst.codemod.visitors import ImportItem
@@ -180,7 +180,7 @@ def call_with_name_changes(
 
 
 def check_old_names_in_import_from(
-    node: cst.ImportFrom, old_new_name_map: Dict[str, Optional[str]]
+    node: cst.ImportFrom, old_new_name_map: Mapping[str, Optional[str]]
 ) -> Tuple[List[str], Optional[cst.ImportFrom]]:
     """
     Using `old_new_name_map`, check if there are any old names in the import from.
