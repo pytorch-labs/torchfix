@@ -39,7 +39,7 @@ class TorchUnsafeLoadVisitor(TorchVisitor):
                 weights_only_arg = cst.ensure_type(
                     cst.parse_expression("f(weights_only=True)"), cst.Call
                 ).args[0]
-                replacement = node.with_changes(args=node.args + (weights_only_arg,))
+                replacement = node.with_changes(args=(*node.args, weights_only_arg))
             self.add_violation(
                 node,
                 error_code=self.ERRORS[0].error_code,

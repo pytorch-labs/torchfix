@@ -70,7 +70,7 @@ class TorchReentrantCheckpointVisitor(TorchVisitor):
             use_reentrant_arg = cst.ensure_type(
                 cst.parse_expression("f(use_reentrant=False)"), cst.Call
             ).args[0]
-            replacement = node.with_changes(args=node.args + (use_reentrant_arg,))
+            replacement = node.with_changes(args=(*node.args, use_reentrant_arg))
             self.add_violation(
                 node,
                 error_code=self.ERRORS[0].error_code,
