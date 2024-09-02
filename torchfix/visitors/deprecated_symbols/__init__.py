@@ -36,10 +36,10 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
 
         super().__init__()
         self.deprecated_config = read_deprecated_config(deprecated_config_path)
-        self.old_new_name_map = {}
-        for name in self.deprecated_config:
-            new_name = self.deprecated_config[name].get("replacement")
-            self.old_new_name_map[name] = new_name
+        self.old_new_name_map = {
+            name: self.deprecated_config[name].get("replacement")
+            for name in self.deprecated_config
+        }
 
     def _call_replacement(
         self, node: cst.Call, qualified_name: str
