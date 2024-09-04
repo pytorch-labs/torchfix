@@ -53,6 +53,14 @@ To enable them, use standard flake8 configuration options for the plugin mode or
 If you encounter a bug or some other problem with TorchFix, please file an issue on
 https://github.com/pytorch-labs/torchfix/issues.
 
+## Rule code assignment policy
+
+New rule codes are assigned incrementally across the following categories:
+
+* **TOR0XX, TOR1XX**: General-purpose `torch` functionality.
+* **TOR2XX**: TorchVision features.
+* **TOR4XX**: Performance tuning and optimization features (e.g. profiling tools).
+* **TOR9XX**: Testing and unstable features.
 
 ## Rules
 
