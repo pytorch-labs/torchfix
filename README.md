@@ -57,8 +57,9 @@ https://github.com/pytorch-labs/torchfix/issues.
 
 New rule codes are assigned incrementally across the following categories:
 
-* **TOR0XX, TOR1XX**: General-purpose `torch` functionality.
-* **TOR2XX**: TorchVision features.
+* **TOR0XX**: Errors in general-purpose PyTorch usage (e.g. removed function usage).
+* **TOR1XX**: Warnings in PyTorch usage (e.g. deprecated functions)
+* **TOR2XX**: TorchVision features
 * **TOR4XX**: Performance tuning and optimization features (e.g. profiling tools).
 * **TOR9XX**: Testing and unstable features.
 
