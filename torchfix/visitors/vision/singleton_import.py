@@ -8,9 +8,9 @@ class TorchVisionSingletonImportVisitor(TorchVisitor):
     ERRORS = [
         TorchError(
             "TOR203",
-             (
-                 "Consider replacing 'import torchvision.{module} as {module}' "
-                 "with 'from torchvision import {module}'."
+            (
+                "Consider replacing 'import torchvision.{module} as {module}' "
+                "with 'from torchvision import {module}'."
             ),
         ),
     ]
