@@ -6,3 +6,6 @@ xx.UpsamplingNearest2d()
 
 import torch.nn as yy
 yy.UpsamplingNearest2d()
+
+func = torch.nn.UpsamplingNearest2d  # not detected currently
+func()
