@@ -83,8 +83,8 @@ def test_errorcodes_distinct():
     for visitor in visitors:
         LOGGER.info("Checking error code for %s", visitor.__class__.__name__)
         for e in visitor.ERRORS:
-            assert e not in seen
-            seen.add(e)
+            assert e.error_code not in seen
+            seen.add(e.error_code)
 
 
 def test_parse_error_code_str(case, expected):
