@@ -64,7 +64,6 @@ def test_empty():
 def test_checker_fixtures(checker_source_path: Path):
     expected_path = checker_source_path.with_suffix(".txt")
     expected_results = expected_path.read_text().splitlines()
-
     results = _checker_results(
         checker_source_path.read_text().splitlines(keepends=True)
     )
@@ -87,8 +86,8 @@ def test_errorcodes_distinct():
     for visitor in visitors:
         LOGGER.info("Checking error code for %s", visitor.__class__.__name__)
         for e in visitor.ERRORS:
-            assert e not in seen
-            seen.add(e)
+            assert e.error_code not in seen
+            seen.add(e.error_code)
 
 
 def test_parse_error_code_str(case, expected):

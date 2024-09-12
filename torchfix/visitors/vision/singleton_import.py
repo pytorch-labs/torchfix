@@ -9,22 +9,8 @@ class TorchVisionSingletonImportVisitor(TorchVisitor):
         TorchError(
             "TOR203",
             (
-                "Consider replacing 'import torchvision.datasets as datasets' "
-                "with 'from torchvision import datasets'."
-            ),
-        ),
-        TorchError(
-            "TOR203",
-            (
-                "Consider replacing 'import torchvision.models as models' "
-                "with 'from torchvision import models'."
-            ),
-        ),
-        TorchError(
-            "TOR203",
-            (
-                "Consider replacing 'import torchvision.transforms as transforms' "
-                "with 'from torchvision import transforms'."
+                "Consider replacing 'import torchvision.{module} as {module}' "
+                "with 'from torchvision import {module}'."
             ),
         ),
     ]
@@ -53,8 +39,8 @@ class TorchVisionSingletonImportVisitor(TorchVisitor):
                         )
                     self.add_violation(
                         node,
-                        error_code=self.ERRORS[i].error_code,
-                        message=self.ERRORS[i].message(),
+                        error_code=self.ERRORS[0].error_code,
+                        message=self.ERRORS[0].message(module=import_attr),
                         replacement=replacement,
                     )
                 break

@@ -18,11 +18,10 @@ def call_replacement_range(node: cst.Call) -> Optional[cst.Call]:
         for arg in node.args:
             if arg.keyword is None:
                 non_kw_args.append(arg)
-            else:
-                if arg.keyword.value == "end":
-                    end_arg = arg
-                elif arg.keyword.value == "step":
-                    step_arg = arg
+            elif arg.keyword.value == "end":
+                end_arg = arg
+            elif arg.keyword.value == "step":
+                step_arg = arg
         if end_arg is None:
             if len(non_kw_args) == 1:
                 end_arg = non_kw_args[0]
@@ -46,15 +45,14 @@ def call_replacement_range(node: cst.Call) -> Optional[cst.Call]:
             step_arg,
             m.Arg(value=m.UnaryOperation(operator=m.Minus(), expression=m.Integer())),
         ):
-            # Ignore type error here and further in this file.
-            # See https://github.com/Instagram/LibCST/issues/964
-            step = -int(step_arg.value.expression.value)  # type: ignore
+            # make mypy happy
+            assert isinstance(step_arg.value, cst.UnaryOperation)
+            assert isinstance(step_arg.value.expression, cst.Integer)
+            step = -int(step_arg.value.expression.value)
 
         # Bail out, don't know how to update with non-integer `step`.
         else:
             return None
-
-    updated_end_arg = None
 
     # `end` is a literal (positive) integer
     if isinstance(end_arg.value, cst.Integer):
@@ -77,10 +75,15 @@ def call_replacement_range(node: cst.Call) -> Optional[cst.Call]:
         end_arg,
         m.Arg(value=m.UnaryOperation(operator=m.Minus(), expression=m.Integer())),
     ):
-        end = -int(end_arg.value.expression.value) + step  # type: ignore
+        op = end_arg.value
+        # make mypy happy
+        assert isinstance(op, cst.UnaryOperation)
+        assert isinstance(op.expression, cst.Integer)
+        end = -int(op.expression.value) + step
         if end < 0:
             updated_end_arg = end_arg.with_deep_changes(
-                old_node=end_arg.value.expression, value=str(-end)  # type: ignore
+                old_node=op.expression,
+                value=str(-end),
             )
         else:
             # `end` became non-negative
@@ -94,7 +97,9 @@ def call_replacement_range(node: cst.Call) -> Optional[cst.Call]:
             value=m.BinaryOperation(operator=m.Subtract(), right=m.Integer(value="1"))
         ),
     ):
-        updated_end_arg = end_arg.with_changes(value=end_arg.value.left)  # type: ignore
+        # make mypy happy
+        assert isinstance(end_arg.value, cst.BinaryOperation)
+        updated_end_arg = end_arg.with_changes(value=end_arg.value.left)
 
     # `end` something else: add `+ 1` at the end
     else:
@@ -106,12 +111,14 @@ def call_replacement_range(node: cst.Call) -> Optional[cst.Call]:
             )
         )
 
-    replacement = node
     if updated_end_arg is not None:
-        # Ignore type error, see https://github.com/Instagram/LibCST/issues/965
-        replacement = replacement.deep_replace(end_arg, updated_end_arg)  # type: ignore
-    replacement = replacement.with_deep_changes(
+        replacement = node.deep_replace(end_arg, updated_end_arg)
+
+        # make mypy happy
+        assert isinstance(replacement, cst.Call)
+    else:
+        replacement = node
+
+    return replacement.with_deep_changes(
         old_node=cst.ensure_type(replacement.func, cst.Attribute).attr, value="arange"
     )
-
-    return replacement

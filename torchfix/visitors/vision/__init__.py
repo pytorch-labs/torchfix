@@ -1,3 +1,9 @@
-from .pretrained import TorchVisionDeprecatedPretrainedVisitor  # noqa: F401
-from .to_tensor import TorchVisionDeprecatedToTensorVisitor  # noqa: F401
-from .singleton_import import TorchVisionSingletonImportVisitor  # noqa: F401
+from .pretrained import TorchVisionDeprecatedPretrainedVisitor
+from .singleton_import import TorchVisionSingletonImportVisitor
+from .to_tensor import TorchVisionDeprecatedToTensorVisitor
+
+__all__ = [
+    "TorchVisionDeprecatedPretrainedVisitor",
+    "TorchVisionDeprecatedToTensorVisitor",
+    "TorchVisionSingletonImportVisitor",
+]

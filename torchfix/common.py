@@ -2,7 +2,7 @@ import sys
 from abc import ABC
 from dataclasses import dataclass
 from os.path import commonprefix
-from typing import Dict, List, Optional, Sequence, Set, Tuple
+from typing import List, Optional, Sequence, Set, Tuple, Mapping
 
 import libcst as cst
 from libcst.codemod.visitors import ImportItem
@@ -26,7 +26,7 @@ class LintViolation:
 
     def flake8_result(self):
         full_message = f"{self.error_code} {self.message}"
-        return (self.line, 1 + self.column, full_message, "TorchFix")
+        return self.line, 1 + self.column, full_message, "TorchFix"
 
     def codemod_result(self) -> str:
         fixable = f" [{CYAN}*{ENDC}]" if self.replacement is not None else ""
@@ -56,6 +56,7 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
     ERRORS: List[TorchError]
 
     def __init__(self) -> None:
+        super().__init__()
         self.violations: List[LintViolation] = []
         self.needed_imports: Set[ImportItem] = set()
 
@@ -128,8 +129,7 @@ class TorchVisitor(cst.BatchableCSTVisitor, ABC):
         name_metadata = list(self.get_metadata(QualifiedNameProvider, node))
         if not name_metadata:
             return None
-        qualified_name = name_metadata[0].name
-        return qualified_name
+        return name_metadata[0].name
 
 
 def call_with_name_changes(
@@ -157,7 +157,6 @@ def call_with_name_changes(
         new_call_name = new_qualified_name.removeprefix(
             commonprefix([qualified_name.removesuffix(call_name), new_qualified_name])
         )
-        new_call_name = new_call_name
         new_module_name = new_qualified_name.removesuffix(new_call_name).removesuffix(
             "."
         )
@@ -175,12 +174,12 @@ def call_with_name_changes(
     # Replace with new_qualified_name.
     if replacement is None:
         return None
-    else:
-        return replacement, needed_imports
+
+    return replacement, needed_imports
 
 
 def check_old_names_in_import_from(
-    node: cst.ImportFrom, old_new_name_map: Dict[str, Optional[str]]
+    node: cst.ImportFrom, old_new_name_map: Mapping[str, Optional[str]]
 ) -> Tuple[List[str], Optional[cst.ImportFrom]]:
     """
     Using `old_new_name_map`, check if there are any old names in the import from.
@@ -188,47 +187,45 @@ def check_old_names_in_import_from(
     1. List of all founds old names.
     2. Optional replacement for the ImportFrom node.
     """
-    if node.module is None:
+    if node.module is None or not isinstance(node.names, Sequence):
         return [], None
 
     old_names: List[str] = []
     replacement = None
-    if isinstance(node.names, Sequence):
-        new_names: List[str] = []
-        module = cst.helpers.get_full_name_for_node(node.module)
+    new_names: List[str] = []
+    module = cst.helpers.get_full_name_for_node(node.module)
 
-        # `possible_new_modules` and `has_non_updated_names` are used
-        # to decide if we can replace the ImportFrom node.
-        new_modules: Set[str] = set()
-        has_non_updated_names = False
+    # `possible_new_modules` and `has_non_updated_names` are used
+    # to decide if we can replace the ImportFrom node.
+    new_modules: Set[str] = set()
+    has_non_updated_names = False
 
-        for name in node.names:
-            qualified_name = f"{module}.{name.name.value}"
-            if qualified_name in old_new_name_map:
-                old_names.append(qualified_name)
-                new_qualified_name = old_new_name_map[qualified_name]
-                if new_qualified_name is not None:
-                    new_module = ".".join(new_qualified_name.split(".")[:-1])
-                    new_name = new_qualified_name.split(".")[-1]
-                    new_names.append(new_name)
-                    new_modules.add(new_module)
-                else:
-                    has_non_updated_names = True
+    for name in node.names:
+        qualified_name = f"{module}.{name.name.value}"
+        if qualified_name in old_new_name_map:
+            old_names.append(qualified_name)
+            new_qualified_name = old_new_name_map[qualified_name]
+            if new_qualified_name is not None:
+                new_module = ".".join(new_qualified_name.split(".")[:-1])
+                new_name = new_qualified_name.split(".")[-1]
+                new_names.append(new_name)
+                new_modules.add(new_module)
             else:
                 has_non_updated_names = True
+        else:
+            has_non_updated_names = True
 
-        # Replace only if the new module is the same for all names in the import.
-        if not has_non_updated_names and len(new_modules) == 1:
-            new_module = new_modules.pop()
-            import_aliases = list(node.names)
-            for i in range(len(import_aliases)):
-                import_aliases[i] = import_aliases[i].with_changes(
-                    name=cst.Name(new_names[i])
-                )
-            replacement = node.with_changes(
-                module=cst.parse_expression(new_module),  # type: ignore[arg-type] # noqa: E501
-                names=import_aliases,
-            )
+    # Replace only if the new module is the same for all names in the import.
+    if not has_non_updated_names and len(new_modules) == 1:
+        new_module = new_modules.pop()
+        import_aliases = [
+            import_alias.with_changes(name=cst.Name(new_name))
+            for import_alias, new_name in zip(list(node.names), new_names)
+        ]
+        replacement = node.with_changes(
+            module=cst.parse_expression(new_module),
+            names=import_aliases,
+        )
 
     return old_names, replacement
 
@@ -236,6 +233,7 @@ def check_old_names_in_import_from(
 def deep_multi_replace(tree, replacement_map):
     class MultiChildReplacementTransformer(cst.CSTTransformer):
         def __init__(self, replacement_map) -> None:
+            super().__init__()
             self.replacement_map = replacement_map
 
         def on_leave(self, original_node, updated_node):

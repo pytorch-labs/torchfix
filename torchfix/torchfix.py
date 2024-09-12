@@ -6,19 +6,19 @@ import libcst as cst
 import libcst.codemod as codemod
 
 from .common import deep_multi_replace, TorchVisitor
-from .visitors.deprecated_symbols import TorchDeprecatedSymbolsVisitor
-from .visitors.internal import TorchScopedLibraryVisitor
 
-from .visitors.performance import TorchSynchronizedDataLoaderVisitor
-from .visitors.misc import TorchRequireGradVisitor, TorchReentrantCheckpointVisitor
-from .visitors.nonpublic import TorchNonPublicAliasVisitor
-
-from .visitors.vision import (
+from .visitors import (
+    TorchDeprecatedSymbolsVisitor,
+    TorchNonPublicAliasVisitor,
+    TorchReentrantCheckpointVisitor,
+    TorchRequireGradVisitor,
+    TorchScopedLibraryVisitor,
+    TorchSynchronizedDataLoaderVisitor,
+    TorchUnsafeLoadVisitor,
     TorchVisionDeprecatedPretrainedVisitor,
     TorchVisionDeprecatedToTensorVisitor,
     TorchVisionSingletonImportVisitor,
 )
-from .visitors.security import TorchUnsafeLoadVisitor
 
 __version__ = "0.5.0"
 

@@ -40,13 +40,13 @@ def StderrSilencer(redirect: bool = True):
             libc.close(orig_stderr)
 
 
-def main() -> None:
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
         "path",
         nargs="+",
-        help=("Path to check/fix. Can be a directory, a file, or multiple of either."),
+        help="Path to check/fix. Can be a directory, a file, or multiple of either.",
     )
     parser.add_argument(
         "--fix",
@@ -78,11 +78,11 @@ def main() -> None:
         action="store_true",
     )
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    if not args.path:
-        parser.print_usage()
-        sys.exit(1)
+
+def main() -> None:
+    args = _parse_args()
 
     files = codemod.gather_files(args.path)
 
