@@ -53,15 +53,16 @@ To enable them, use standard flake8 configuration options for the plugin mode or
 If you encounter a bug or some other problem with TorchFix, please file an issue on
 https://github.com/pytorch-labs/torchfix/issues.
 
-## Rule code assignment policy
+## Rule Code Assignment Policy
 
 New rule codes are assigned incrementally across the following categories:
 
-* **TOR0XX**: Errors in general-purpose PyTorch usage (e.g. removed function usage).
-* **TOR1XX**: Warnings in PyTorch usage (e.g. deprecated functions)
-* **TOR2XX**: TorchVision features
-* **TOR4XX**: Performance tuning and optimization features (e.g. profiling tools).
-* **TOR9XX**: Testing and unstable features.
+* **TOR0XX, TOR1XX**: General-purpose `torch` functionality.
+* **TOR2XX**: Domain-specific rules, such as TorchVision.
+* **TOR4XX**: Noisy rules that are disabled by default.
+* **TOR9XX**: Internal rules specific for `pytorch/pytorch` repo, other users should not use these.
+
+TOR0, TOR1 and TOR2 are enabled by default.
 
 ## Rules
 
