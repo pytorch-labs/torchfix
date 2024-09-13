@@ -2,7 +2,6 @@ import argparse
 import libcst.codemod as codemod
 
 import contextlib
-import ctypes
 import sys
 import io
 
@@ -22,22 +21,8 @@ from .common import CYAN, ENDC
 def StderrSilencer(redirect: bool = True):
     if not redirect:
         yield
-    elif sys.platform != "darwin":
-        with contextlib.redirect_stderr(io.StringIO()):
-            yield
-    else:
-        # redirect_stderr does not work for some reason
-        # Workaround it by using good old dup2 to redirect
-        # stderr to /dev/null
-        libc = ctypes.CDLL("libc.dylib")
-        orig_stderr = libc.dup(2)
-        with open("/dev/null", "w") as f:
-            libc.dup2(f.fileno(), 2)
-        try:
-            yield
-        finally:
-            libc.dup2(orig_stderr, 2)
-            libc.close(orig_stderr)
+    with contextlib.redirect_stderr(io.StringIO()):
+        yield
 
 
 def _parse_args() -> argparse.Namespace:
