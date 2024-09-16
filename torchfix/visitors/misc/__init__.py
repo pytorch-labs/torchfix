@@ -77,3 +77,47 @@ class TorchReentrantCheckpointVisitor(TorchVisitor):
                 message=self.ERRORS[0].message(),
                 replacement=replacement,
             )
+
+
+class TorchLog1pVisitor(TorchVisitor):
+    """
+    Suggest using `torch.log1p(x)` instead of `torch.log(1 + x)`.
+    """
+
+    ERRORS = [
+        TorchError(
+            "TOR106",
+            (
+                "Use `torch.log1p(x)` instead of `torch.log(1 + x)`. "
+                "It is more accurate for small values of `x`."
+            ),
+        )
+    ]
+
+    def visit_Call(self, node):
+        if self.get_qualified_name_for_call(node) == "torch.log":
+
+            if m.matches(
+                node,
+                m.Call(
+                    args=[
+                        m.Arg(
+                            value=m.BinaryOperation(
+                                left=m.Integer(value="1") | m.Float(value="1.0"),
+                                operator=m.Add(),
+                            )
+                            | m.BinaryOperation(
+                                operator=m.Add(),
+                                right=m.Integer(value="1") | m.Float(value="1.0"),
+                            ),
+                        ),
+                    ],
+                ),
+            ):
+
+                self.add_violation(
+                    node,
+                    error_code=self.ERRORS[0].error_code,
+                    message=self.ERRORS[0].message(),
+                    replacement=None,
+                )
