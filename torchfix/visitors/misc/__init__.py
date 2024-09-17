@@ -121,3 +121,36 @@ class TorchLog1pVisitor(TorchVisitor):
                     message=self.ERRORS[0].message(),
                     replacement=None,
                 )
+
+
+class TorchExpm1Visitor(TorchVisitor):
+    """
+    Suggest using `torch.special.expm1(x)` instead of `torch.exp(x) - 1`.
+    """
+
+    ERRORS = [
+        TorchError(
+            "TOR107",
+            (
+                "Use `torch.special.expm1(x)` instead of `torch.exp(x) - 1`. "
+                "It is more accurate for small values of `x`."
+            ),
+        )
+    ]
+
+    def visit_BinaryOperation(self, node):
+        if m.matches(
+            node,
+            m.BinaryOperation(
+                left=m.Call(),
+                operator=m.Subtract(),
+                right=m.Integer(value="1") | m.Float(value="1.0"),
+            ),
+        ):
+            if self.get_qualified_name_for_call(node.left) == "torch.exp":
+                self.add_violation(
+                    node,
+                    error_code=self.ERRORS[0].error_code,
+                    message=self.ERRORS[0].message(),
+                    replacement=None,
+                )

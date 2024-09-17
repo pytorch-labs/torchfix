@@ -1,9 +1,10 @@
 from .deprecated_symbols import TorchDeprecatedSymbolsVisitor
 from .internal import TorchScopedLibraryVisitor
 from .misc import (
+    TorchExpm1Visitor,
+    TorchLog1pVisitor,
     TorchReentrantCheckpointVisitor,
     TorchRequireGradVisitor,
-    TorchLog1pVisitor,
 )
 from .nonpublic import TorchNonPublicAliasVisitor
 from .performance import TorchSynchronizedDataLoaderVisitor
@@ -16,6 +17,7 @@ from .vision import (
 
 __all__ = [
     "TorchDeprecatedSymbolsVisitor",
+    "TorchExpm1Visitor",
     "TorchLog1pVisitor",
     "TorchNonPublicAliasVisitor",
     "TorchReentrantCheckpointVisitor",

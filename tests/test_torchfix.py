@@ -37,7 +37,15 @@ def pytest_generate_tests(metafunc):
             ("TOR102,TOR101", {"TOR102", "TOR101"}),
             (
                 "TOR1,TOR102",
-                {"TOR102", "TOR101", "TOR103", "TOR104", "TOR105", "TOR106"},
+                {
+                    "TOR101",
+                    "TOR102",
+                    "TOR103",
+                    "TOR104",
+                    "TOR105",
+                    "TOR106",
+                    "TOR107",
+                },
             ),
             (None, set(GET_ALL_ERROR_CODES()) - exclude_set),
         ]
