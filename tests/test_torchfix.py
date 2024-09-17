@@ -35,7 +35,10 @@ def pytest_generate_tests(metafunc):
             ("ALL,TOR102", GET_ALL_ERROR_CODES()),
             ("TOR102", {"TOR102"}),
             ("TOR102,TOR101", {"TOR102", "TOR101"}),
-            ("TOR1,TOR102", {"TOR102", "TOR101", "TOR103", "TOR104", "TOR105"}),
+            (
+                "TOR1,TOR102",
+                {"TOR102", "TOR101", "TOR103", "TOR104", "TOR105", "TOR106"},
+            ),
             (None, set(GET_ALL_ERROR_CODES()) - exclude_set),
         ]
         metafunc.parametrize("case,expected", cases, ids=[case for case, _ in cases])
