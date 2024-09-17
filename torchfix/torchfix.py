@@ -9,6 +9,7 @@ from .common import deep_multi_replace, TorchVisitor
 
 from .visitors import (
     TorchDeprecatedSymbolsVisitor,
+    TorchExpm1Visitor,
     TorchLog1pVisitor,
     TorchNonPublicAliasVisitor,
     TorchReentrantCheckpointVisitor,
@@ -29,6 +30,7 @@ DISABLED_BY_DEFAULT = ["TOR3", "TOR4", "TOR9"]
 
 ALL_VISITOR_CLS = [
     TorchDeprecatedSymbolsVisitor,
+    TorchExpm1Visitor,
     TorchLog1pVisitor,
     TorchNonPublicAliasVisitor,
     TorchRequireGradVisitor,
