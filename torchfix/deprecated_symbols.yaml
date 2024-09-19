@@ -25,11 +25,11 @@
   replacement: torch.outer
 
 - name: torch.lu_solve
-  deprecate_pr: TBA
+  deprecate_pr: https://github.com/pytorch/pytorch/pull/73806
   remove_pr:
 
 - name: torch.norm
-  deprecate_pr: TBA
+  deprecate_pr: https://github.com/pytorch/pytorch/pull/57986
   remove_pr:
 
 - name: torch.range
@@ -45,8 +45,16 @@
   remove_pr:
 
 - name: torch.lu
-  deprecate_pr: TBA
+  deprecate_pr: https://github.com/pytorch/pytorch/pull/73804
   remove_pr:
+
+- name: torch.matrix_rank
+  deprecate_pr: https://github.com/pytorch/pytorch/pull/57734
+  remove_pr: https://github.com/pytorch/pytorch/pull/70981
+
+- name: torch.lstsq
+  deprecate_pr: https://github.com/pytorch/pytorch/pull/57743
+  remove_pr: https://github.com/pytorch/pytorch/pull/70980
 
 - name: torch.nn.UpsamplingNearest2d
   deprecate_pr: TBA
