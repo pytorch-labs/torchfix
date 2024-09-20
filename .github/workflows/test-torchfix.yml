@@ -23,6 +23,9 @@ jobs:
       - name: Install TorchFix
         run: |
           pip3 install ".[dev]"
+      - name: Run torchfix CLI
+        run: |
+          torchfix --help
       - name: Run pytest
         run: |
           pytest tests
