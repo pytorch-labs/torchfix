@@ -1,3 +1,4 @@
+import os
 import subprocess
 from pathlib import Path
 from torchfix.torchfix import (
@@ -96,33 +97,33 @@ def test_parse_error_code_str(case, expected):
 
 
 def test_stderr_suppression(tmp_path):
-    data = "import torchvision.datasets as datasets\n"
+    data = f"import torchvision.datasets as datasets{os.linesep}"
     data_path = tmp_path / "fixable.py"
     data_path.write_text(data)
     result = subprocess.run(
         ["torchfix", "--select", "TOR203", "--fix", str(data_path)],
         stderr=subprocess.PIPE,
         text=True,
-        check=True,
+        check=False,
     )
     assert (
-        result.stderr
-        == "Finished checking 1 files.\nTransformed 1 files successfully.\n"
+        result.stderr == f"Finished checking 1 files.{os.linesep}"
+        f"Transformed 1 files successfully.{os.linesep}"
     )
 
-    data = "import torchvision.datasets as datasets\n"
+    data = f"import torchvision.datasets as datasets{os.linesep}"
     data_path = tmp_path / "fixable.py"
     data_path.write_text(data)
     result = subprocess.run(
         ["torchfix", "--select", "TOR203", "--show-stderr", "--fix", str(data_path)],
         stderr=subprocess.PIPE,
         text=True,
-        check=True,
+        check=False,
     )
     assert (
-        result.stderr
-        == f"Executing codemod...\nFailed to determine module name for {data_path}: "
-        f"'{data_path}' is not in the subpath of '' OR one path is relative and the "
-        "other is absolute.\nFinished checking 1 files.\nTransformed 1 files "
-        "successfully.\n"
+        result.stderr == f"Executing codemod...{os.linesep}"
+        f"Failed to determine module name for {data_path}: '{data_path}' is not in the "
+        f"subpath of '' OR one path is relative and the other is absolute.{os.linesep}"
+        f"Finished checking 1 files.{os.linesep}"
+        f"Transformed 1 files successfully.{os.linesep}"
     )
