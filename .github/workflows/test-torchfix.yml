@@ -8,11 +8,15 @@ jobs:
   test-torchfix:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, macos-latest-large, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Show CPU architecture
+        if: matrix.os == 'macos-latest-large' || matrix.os == 'macos-latest'
+        run: |
+          uname -m
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10' 
@@ -23,9 +27,12 @@ jobs:
       - name: Install TorchFix
         run: |
           pip3 install ".[dev]"
+      - name: Run torchfix CLI
+        run: |
+          torchfix --help
       - name: Run pytest
         run: |
-          pytest tests
+          pytest -vv tests
       - name: Run flake8
         run: |
           flake8

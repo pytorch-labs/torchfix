@@ -1,3 +1,5 @@
+import os
+import subprocess
 from pathlib import Path
 from torchfix.torchfix import (
     TorchChecker,
@@ -103,3 +105,37 @@ def test_errorcodes_distinct():
 
 def test_parse_error_code_str(case, expected):
     assert process_error_code_str(case) == expected
+
+
+def test_stderr_suppression(tmp_path):
+    data = f"import torchvision.datasets as datasets{os.linesep}"
+    data_path = tmp_path / "fixable.py"
+    data_path.write_text(data)
+    result = subprocess.run(
+        ["torchfix", "--select", "TOR203", "--fix", str(data_path)],
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    assert (
+        result.stderr == "Finished checking 1 files.\n"
+        "Transformed 1 files successfully.\n"
+    )
+
+    data = f"import torchvision.datasets as datasets{os.linesep}"
+    data_path = tmp_path / "fixable.py"
+    data_path.write_text(data)
+    result = subprocess.run(
+        ["torchfix", "--select", "TOR203", "--show-stderr", "--fix", str(data_path)],
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    expected = result.stderr.replace("\\\\", "\\")
+    assert (
+        expected == f"Executing codemod...\n"
+        f"Failed to determine module name for {data_path}: '{data_path}' is not in the "
+        f"subpath of '' OR one path is relative and the other is absolute.\n"
+        f"Finished checking 1 files.\n"
+        f"Transformed 1 files successfully.\n"
+    )
