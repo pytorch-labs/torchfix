@@ -103,6 +103,7 @@ def test_stderr_suppression(tmp_path):
         ["torchfix", "--select", "TOR203", "--fix", str(data_path)],
         stderr=subprocess.PIPE,
         text=True,
+        check=True,
     )
     assert (
         result.stderr
@@ -116,6 +117,7 @@ def test_stderr_suppression(tmp_path):
         ["torchfix", "--select", "TOR203", "--show-stderr", "--fix", str(data_path)],
         stderr=subprocess.PIPE,
         text=True,
+        check=True,
     )
     assert (
         result.stderr
