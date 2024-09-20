@@ -120,10 +120,11 @@ def test_stderr_suppression(tmp_path):
         text=True,
         check=False,
     )
+    data_path = str(data_path).replace("\\", "\\\\")
     assert (
-        result.stderr == f"Executing codemod...{os.linesep}"
+        result.stderr == f"Executing codemod...\n"
         f"Failed to determine module name for {data_path}: '{data_path}' is not in the "
-        f"subpath of '' OR one path is relative and the other is absolute.{os.linesep}"
-        f"Finished checking 1 files.{os.linesep}"
-        f"Transformed 1 files successfully.{os.linesep}"
+        f"subpath of '' OR one path is relative and the other is absolute.\n"
+        f"Finished checking 1 files.\n"
+        f"Transformed 1 files successfully.\n"
     )
