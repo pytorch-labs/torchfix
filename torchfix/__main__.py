@@ -16,15 +16,6 @@ from .torchfix import (
 from .common import CYAN, ENDC
 
 
-# Should get rid of this code eventually.
-@contextlib.contextmanager
-def StderrSilencer(redirect: bool = True):
-    if not redirect:
-        yield
-    with contextlib.redirect_stderr(io.StringIO()):
-        yield
-
-
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
 
@@ -87,7 +78,12 @@ def main() -> None:
     command_instance = TorchCodemod(codemod.CodemodContext(), config)
     DIFF_CONTEXT = 5
     try:
-        with StderrSilencer(not args.show_stderr):
+        supress_stderr = (
+            contextlib.redirect_stderr(io.StringIO())
+            if not args.show_stderr
+            else contextlib.nullcontext()
+        )
+        with supress_stderr:
             result = codemod.parallel_exec_transform_with_prettyprint(
                 command_instance,
                 torch_files,
