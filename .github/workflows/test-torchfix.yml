@@ -13,6 +13,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Show CPU architecture
+        if: matrix.os == 'macos-latest-large' || matrix.os == 'macos-latest'
+        run: |
+          uname -m
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10' 
