@@ -28,7 +28,7 @@ jobs:
           torchfix --help
       - name: Run pytest
         run: |
-          pytest tests
+          pytest -vv tests
       - name: Run flake8
         run: |
           flake8
