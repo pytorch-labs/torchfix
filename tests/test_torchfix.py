@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 from torchfix.torchfix import (
     TorchChecker,
@@ -118,6 +119,6 @@ def test_stderr_suppression(tmp_path):
     )
     assert (
         result.stderr
-        == "Executing codemod...\nFailed to determine module name for {path}: '{path}' is not in the subpath of '' OR one path is relative and the other is absolute.\nFinished checking 1 files.\nTransformed 1 files successfully.\n"
+        == f"Executing codemod...\nFailed to determine module name for {data_path}: '{data_path}' is not in the subpath of '' OR one path is relative and the other is absolute.\nFinished checking 1 files.\nTransformed 1 files successfully.\n"
     )
 
