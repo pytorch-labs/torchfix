@@ -107,8 +107,8 @@ def test_stderr_suppression(tmp_path):
         check=False,
     )
     assert (
-        result.stderr == f"Finished checking 1 files.{os.linesep}"
-        f"Transformed 1 files successfully.{os.linesep}"
+        result.stderr == "Finished checking 1 files.\n"
+        "Transformed 1 files successfully.\n"
     )
 
     data = f"import torchvision.datasets as datasets{os.linesep}"
