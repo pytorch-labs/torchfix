@@ -1,16 +1,18 @@
+import logging
+import subprocess
 from pathlib import Path
+
+import libcst.codemod as codemod
 from torchfix.torchfix import (
+    DISABLED_BY_DEFAULT,
+    expand_error_codes,
+    GET_ALL_ERROR_CODES,
+    GET_ALL_VISITORS,
+    process_error_code_str,
     TorchChecker,
     TorchCodemod,
     TorchCodemodConfig,
-    DISABLED_BY_DEFAULT,
-    expand_error_codes,
-    GET_ALL_VISITORS,
-    GET_ALL_ERROR_CODES,
-    process_error_code_str,
 )
-import logging
-import libcst.codemod as codemod
 
 FIXTURES_PATH = Path(__file__).absolute().parent / "fixtures"
 LOGGER = logging.getLogger(__name__)
@@ -103,3 +105,23 @@ def test_errorcodes_distinct():
 
 def test_parse_error_code_str(case, expected):
     assert process_error_code_str(case) == expected
+
+
+def test_no_python_files(tmp_path):
+    # Create a temporary directory with no Python files
+    non_python_file = tmp_path / "not_a_python_file.txt"
+    non_python_file.write_text("This is not a Python file")
+
+    # Run torchfix on the temporary directory
+    # TODO: Fix this. This will not run the test on current build
+    result = subprocess.run(
+        ["torchfix", str(tmp_path)],
+        capture_output=True,
+        text=True,
+    )
+
+    # Check that the script exits successfully
+    assert result.returncode == 0
+
+    # Check that the correct message is printed
+    assert "No Python files with torch imports found." in result.stderr
