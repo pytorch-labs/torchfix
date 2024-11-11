@@ -113,7 +113,7 @@ def test_no_python_files(tmp_path):
     non_python_file.write_text("This is not a Python file")
 
     # Run torchfix on the temporary directory
-    # TODO: Fix this. This will not run the test on current build
+    # Seems wrong to call python3 directly here.
     result = subprocess.run(
         ["python3", "torchfix/__main__.py", str(tmp_path)],
         capture_output=True,
