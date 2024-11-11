@@ -113,13 +113,11 @@ def test_no_python_files(tmp_path):
     non_python_file.write_text("This is not a Python file")
 
     # Run torchfix on the temporary directory
-    # Seems wrong to call python3 directly here.
     result = subprocess.run(
         ["python3", "-m", "torchfix", str(tmp_path)],
         capture_output=True,
         text=True,
     )
-
     # Check that the script exits successfully
     assert result.returncode == 0
 
