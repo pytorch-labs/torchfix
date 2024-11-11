@@ -115,7 +115,7 @@ def test_no_python_files(tmp_path):
     # Run torchfix on the temporary directory
     # TODO: Fix this. This will not run the test on current build
     result = subprocess.run(
-        ["torchfix", str(tmp_path)],
+        ["python3", "torchfix/__main__.py", str(tmp_path)],
         capture_output=True,
         text=True,
     )
