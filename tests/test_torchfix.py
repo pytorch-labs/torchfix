@@ -115,7 +115,7 @@ def test_no_python_files(tmp_path):
     # Run torchfix on the temporary directory
     # Seems wrong to call python3 directly here.
     result = subprocess.run(
-        ["python3", "torchfix/__main__.py", str(tmp_path)],
+        ["python3", "-m", "torchfix", str(tmp_path)],
         capture_output=True,
         text=True,
     )
