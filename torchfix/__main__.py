@@ -99,7 +99,6 @@ def main() -> None:
                     break
 
     if not torch_files:
-        print("No Python files with torch imports found.", file=sys.stderr)
         return
     config = TorchCodemodConfig()
     config.select = list(process_error_code_str(args.select))

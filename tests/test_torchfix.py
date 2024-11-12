@@ -120,6 +120,3 @@ def test_no_python_files(tmp_path):
     )
     # Check that the script exits successfully
     assert result.returncode == 0
-
-    # Check that the correct message is printed
-    assert "No Python files with torch imports found." in result.stderr
