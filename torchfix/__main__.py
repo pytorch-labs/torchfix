@@ -1,20 +1,22 @@
 import argparse
-import libcst.codemod as codemod
 
 import contextlib
 import ctypes
-import sys
 import io
+import sys
+
+import libcst.codemod as codemod
+
+from .common import CYAN, ENDC
 
 from .torchfix import (
-    TorchCodemod,
-    TorchCodemodConfig,
     __version__ as TorchFixVersion,
     DISABLED_BY_DEFAULT,
     GET_ALL_ERROR_CODES,
     process_error_code_str,
+    TorchCodemod,
+    TorchCodemodConfig,
 )
-from .common import CYAN, ENDC
 
 
 # Should get rid of this code eventually.
@@ -83,7 +85,6 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = _parse_args()
-
     files = codemod.gather_files(args.path)
 
     # Filter out files that don't have "torch" string in them.
@@ -97,6 +98,8 @@ def main() -> None:
                     torch_files.append(file)
                     break
 
+    if not torch_files:
+        return
     config = TorchCodemodConfig()
     config.select = list(process_error_code_str(args.select))
     command_instance = TorchCodemod(codemod.CodemodContext(), config)
