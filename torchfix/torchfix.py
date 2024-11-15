@@ -22,7 +22,7 @@ from .visitors import (
     TorchVisionSingletonImportVisitor,
 )
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 DEPRECATED_CONFIG_PATH = "deprecated_symbols.yaml"
 
