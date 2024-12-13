@@ -83,6 +83,22 @@
   remove_pr:
   reference: https://github.com/pytorch-labs/torchfix#torchbackendscudasdp_kernel
 
+- name: torch.cuda.amp.autocast
+  deprecate_pr: TBA
+  remove_pr:
+
+- name: torch.cuda.amp.custom_fwd
+  deprecate_pr: TBA
+  remove_pr:
+
+- name: torch.cuda.amp.custom_bwd
+  deprecate_pr: TBA
+  remove_pr:
+
+- name: torch.cpu.amp.autocast
+  deprecate_pr: TBA
+  remove_pr:
+
 # functorch
 - name: functorch.vmap
   deprecate_pr: TBA

@@ -1,19 +1,22 @@
-import libcst as cst
 import pkgutil
+from typing import List, Optional
+
+import libcst as cst
 import yaml
-from typing import Optional, List
 
 from ...common import (
-    TorchVisitor,
-    TorchError,
     call_with_name_changes,
     check_old_names_in_import_from,
+    TorchError,
+    TorchVisitor,
 )
 
-from .range import call_replacement_range
-from .cholesky import call_replacement_cholesky
+from .amp import call_replacement_cpu_amp_autocast, call_replacement_cuda_amp_autocast
 from .chain_matmul import call_replacement_chain_matmul
+from .cholesky import call_replacement_cholesky
 from .qr import call_replacement_qr
+
+from .range import call_replacement_range
 
 
 class TorchDeprecatedSymbolsVisitor(TorchVisitor):
@@ -49,6 +52,8 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
             "torch.range": call_replacement_range,
             "torch.chain_matmul": call_replacement_chain_matmul,
             "torch.qr": call_replacement_qr,
+            "torch.cuda.amp.autocast": call_replacement_cuda_amp_autocast,
+            "torch.cpu.amp.autocast": call_replacement_cpu_amp_autocast,
         }
         replacement = None
 
