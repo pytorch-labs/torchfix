@@ -1,0 +1,6 @@
+3:1 TOR101 Use of deprecated function torch.cuda.amp.autocast
+4:1 TOR101 Use of deprecated function torch.cuda.amp.custom_fwd
+5:1 TOR101 Use of deprecated function torch.cuda.amp.custom_bwd
+8:18 TOR101 Use of deprecated function torch.cpu.amp.autocast
+9:18 TOR101 Use of deprecated function torch.cpu.amp.autocast
+10:18 TOR101 Use of deprecated function torch.cpu.amp.autocast
