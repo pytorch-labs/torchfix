@@ -3,6 +3,7 @@ from .internal import TorchScopedLibraryVisitor
 from .misc import (
     TorchExpm1Visitor,
     TorchLog1pVisitor,
+    TorchLogsumexpVisitor,
     TorchReentrantCheckpointVisitor,
     TorchRequireGradVisitor,
 )
@@ -19,6 +20,7 @@ __all__ = [
     "TorchDeprecatedSymbolsVisitor",
     "TorchExpm1Visitor",
     "TorchLog1pVisitor",
+    "TorchLogsumexpVisitor",
     "TorchNonPublicAliasVisitor",
     "TorchReentrantCheckpointVisitor",
     "TorchRequireGradVisitor",
