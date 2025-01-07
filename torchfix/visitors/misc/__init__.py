@@ -96,7 +96,6 @@ class TorchLog1pVisitor(TorchVisitor):
 
     def visit_Call(self, node):
         if self.get_qualified_name_for_call(node) == "torch.log":
-
             if m.matches(
                 node,
                 m.Call(
@@ -114,7 +113,6 @@ class TorchLog1pVisitor(TorchVisitor):
                     ],
                 ),
             ):
-
                 self.add_violation(
                     node,
                     error_code=self.ERRORS[0].error_code,
@@ -154,3 +152,41 @@ class TorchExpm1Visitor(TorchVisitor):
                     message=self.ERRORS[0].message(),
                     replacement=None,
                 )
+
+
+class TorchLogsumexpVisitor(TorchVisitor):
+    """
+    Suggest using `torch.logsumexp(x)` instead of `torch.log(torch.sum(torch.exp(x))`.
+    """
+
+    ERRORS = [
+        TorchError(
+            "TOR108",
+            ("Use numerically stabilized `torch.logsumexp`."),
+        )
+    ]
+
+    def visit_Call(self, node):
+        if self.get_qualified_name_for_call(node) == "torch.log":
+            if m.matches(
+                node,
+                m.Call(
+                    args=[
+                        m.Arg(m.Call(args=[m.Arg(m.Call()), m.ZeroOrMore()])),
+                        m.ZeroOrMore(),
+                    ]
+                ),
+            ):
+                if self.get_qualified_name_for_call(node.args[0].value) == "torch.sum":
+                    if (
+                        self.get_qualified_name_for_call(
+                            node.args[0].value.args[0].value
+                        )
+                        == "torch.exp"
+                    ):
+                        self.add_violation(
+                            node,
+                            error_code=self.ERRORS[0].error_code,
+                            message=self.ERRORS[0].message(),
+                            replacement=None,
+                        )
