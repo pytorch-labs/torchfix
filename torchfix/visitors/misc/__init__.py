@@ -185,7 +185,10 @@ class TorchLogsumexpVisitor(TorchVisitor):
                         == "torch.exp"
                     ):
                         if len(node.args[0].value.args) > 1 and (
-                            node.args[0].value.args[1].value is not None
+                            self.get_specific_arg(
+                                node.args[0].value, arg_name="dim", arg_pos=1
+                            )
+                            is not None
                             or self.has_specific_arg(node.args[0].value, "dim", -1)
                         ):
                             self.add_violation(
