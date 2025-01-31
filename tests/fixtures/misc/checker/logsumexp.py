@@ -5,7 +5,7 @@ b = torch.randn(5)
 # logsumexp
 y = torch.log(torch.sum(torch.exp(x), 1, keepdim=True)) # has all the arguments for sum function call with keepdim as True
 y = torch.log(torch.sum(torch.exp(2.5 + x), 1)) # addition operation inside the exp function call
-y = torch.log(torch.sum(torch.exp(x),dim=1,keepdim=False)) # has all the arguments for sum function call
+y = torch.log(torch.sum(torch.exp(x),dim=1,keepdim=True)) # has all the arguments for sum function call
 y = torch.log(torch.sum(torch.exp(x), dim=1)) #default value of keepdim is False
 
 # not logsumexp
