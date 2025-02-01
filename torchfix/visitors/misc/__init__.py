@@ -219,7 +219,8 @@ class TorchLogsumexpVisitor(TorchVisitor):
                                             isinstance(element.value, cst.Integer)
                                             and element.value.value != "None"
                                             for element in dim_arg.value.elements
-                                        ):  # checks if all elements of the tuple are not None
+                                        ):  # checks if all elements of the
+                                            # tuple are not None
                                             self.add_violation(
                                                 node,
                                                 error_code=self.ERRORS[0].error_code,
