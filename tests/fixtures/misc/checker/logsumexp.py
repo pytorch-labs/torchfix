@@ -7,6 +7,7 @@ y = torch.log(torch.sum(torch.exp(x), 1, keepdim=True)) # has all the arguments 
 y = torch.log(torch.sum(torch.exp(2.5 + x), 1)) # addition operation inside the exp function call
 y = torch.log(torch.sum(torch.exp(x),dim=1,keepdim=True)) # has all the arguments for sum function call
 y = torch.log(torch.sum(torch.exp(x), dim=1)) #default value of keepdim is False
+y = torch.log(torch.sum(torch.exp(x), dim=(1,2))) #default value of keepdim is False
 
 # not logsumexp
 y = torch.log(torch.sum(torch.exp(x), 1, keepdim=True) + 2.5) # cant have an addition operation inside the log function call 
@@ -18,3 +19,5 @@ y = torch.log(torch.sum(torch.exp(2.5))) # this should not be flagged as the sec
 y = torch.log(torch.sum(torch.exp(x)), dim=1) #dim is not part of the sum fuction call
 y = torch.log(torch.sum(torch.exp(x)), dim=None) #dim is not part of the sum fuction call and dim is None
 y = torch.log(torch.sum(torch.exp(x), keepdim=True, dim=None)) #dim argument cannot be None 
+y = torch.log(torch.sum(torch.exp(x), dim=(1,None))) #dim argument cannot be a tuple with None
+y = torch.log(torch.sum(torch.exp(x), dim=(None,None))) #dim argument cannot be a tuple with None
