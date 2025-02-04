@@ -15,6 +15,7 @@ from .amp import call_replacement_cpu_amp_autocast, call_replacement_cuda_amp_au
 from .chain_matmul import call_replacement_chain_matmul
 from .cholesky import call_replacement_cholesky
 from .qr import call_replacement_qr
+from .size_average import call_replacement_loss
 
 from .range import call_replacement_range
 
@@ -54,6 +55,7 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
             "torch.qr": call_replacement_qr,
             "torch.cuda.amp.autocast": call_replacement_cuda_amp_autocast,
             "torch.cpu.amp.autocast": call_replacement_cpu_amp_autocast,
+            "torch.nn.functional.soft_margin_loss": call_replacement_loss
         }
         replacement = None
 
@@ -103,7 +105,8 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
         qualified_name = self.get_qualified_name_for_call(node)
         if qualified_name is None:
             return
-
+        self.deprecated_config["torch.nn.functional.soft_margin_loss"] = {}
+        self.deprecated_config["torch.nn.functional.soft_margin_loss"]["remove_pr"] = None
         if qualified_name in self.deprecated_config:
             if self.deprecated_config[qualified_name]["remove_pr"] is None:
                 error_code = self.ERRORS[1].error_code
@@ -112,7 +115,6 @@ class TorchDeprecatedSymbolsVisitor(TorchVisitor):
                 error_code = self.ERRORS[0].error_code
                 message = self.ERRORS[0].message(old_name=qualified_name)
             replacement = self._call_replacement(node, qualified_name)
-
             reference = self.deprecated_config[qualified_name].get("reference")
             if reference is not None:
                 message = f"{message}: {reference}"
