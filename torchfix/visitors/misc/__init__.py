@@ -184,9 +184,17 @@ class TorchLogsumexpVisitor(TorchVisitor):
                         )
                         == "torch.exp"
                     ):
-                        self.add_violation(
-                            node,
-                            error_code=self.ERRORS[0].error_code,
-                            message=self.ERRORS[0].message(),
-                            replacement=None,
+
+                        # if `dim` is not provided or None for sum, skip:
+                        # https://github.com/pytorch/pytorch/issues/144339
+                        dim_arg = self.get_specific_arg(
+                            node.args[0].value, arg_name="dim", arg_pos=1
                         )
+
+                        if dim_arg is not None and dim_arg.value.value != "None":
+                            self.add_violation(
+                                node,
+                                error_code=self.ERRORS[0].error_code,
+                                message=self.ERRORS[0].message(),
+                                replacement=None,
+                            )
