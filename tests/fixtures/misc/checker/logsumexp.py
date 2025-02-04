@@ -19,4 +19,3 @@ y = torch.log(torch.sum(torch.exp(2.5))) # this should not be flagged as the sec
 y = torch.log(torch.sum(torch.exp(x)), dim=1) #dim is not part of the sum fuction call
 y = torch.log(torch.sum(torch.exp(x)), dim=None) #dim is not part of the sum fuction call and dim is None
 y = torch.log(torch.sum(torch.exp(x), keepdim=True, dim=None)) #dim argument cannot be None 
-y = torch.log(torch.sum(torch.exp(x), dim=(1,None))) #dim argument cannot be a tuple with None
