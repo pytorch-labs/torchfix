@@ -184,46 +184,32 @@ class TorchLogsumexpVisitor(TorchVisitor):
                         )
                         == "torch.exp"
                     ):
-                        if (
-                            self.get_qualified_name_for_call(node.args[0].value)
-                            == "torch.sum"
-                        ):
-                            if (
-                                self.get_qualified_name_for_call(
-                                    node.args[0].value.args[0].value
-                                )
-                                == "torch.exp"
-                            ):
-                                dim_arg = self.get_specific_arg(
-                                    node.args[0].value, arg_name="dim", arg_pos=1
-                                )
-                                if dim_arg:  # checks if dim argument is present
-                                    if isinstance(
-                                        dim_arg.value, cst.Integer
-                                    ) or isinstance(
-                                        dim_arg.value, cst.Tuple
-                                    ):  # checks if dim argument is an integer or tuple
-                                        if (
-                                            isinstance(dim_arg.value, cst.Integer)
-                                            and dim_arg.value.value != "None"
-                                        ):
-                                            self.add_violation(
-                                                node,
-                                                error_code=self.ERRORS[0].error_code,
-                                                message=self.ERRORS[0].message(),
-                                                replacement=None,
-                                            )
-                                        elif isinstance(
-                                            dim_arg.value, cst.Tuple
-                                        ) and all(
-                                            isinstance(element.value, cst.Integer)
-                                            and element.value.value != "None"
-                                            for element in dim_arg.value.elements
-                                        ):  # checks if all elements of the
-                                            # tuple are not None
-                                            self.add_violation(
-                                                node,
-                                                error_code=self.ERRORS[0].error_code,
-                                                message=self.ERRORS[0].message(),
-                                                replacement=None,
-                                            )
+                        dim_arg = self.get_specific_arg(
+                            node.args[0].value, arg_name="dim", arg_pos=1
+                        )
+                        if dim_arg:  # checks if dim argument is present
+                            if isinstance(dim_arg.value, cst.Integer) or isinstance(
+                                dim_arg.value, cst.Tuple
+                            ):  # checks if dim argument is an integer or tuple
+                                if (
+                                    isinstance(dim_arg.value, cst.Integer)
+                                    and dim_arg.value.value != "None"
+                                ):
+                                    self.add_violation(
+                                        node,
+                                        error_code=self.ERRORS[0].error_code,
+                                        message=self.ERRORS[0].message(),
+                                        replacement=None,
+                                    )
+                                elif isinstance(dim_arg.value, cst.Tuple) and all(
+                                    isinstance(element.value, cst.Integer)
+                                    and element.value.value != "None"
+                                    for element in dim_arg.value.elements
+                                ):  # checks if all elements of the
+                                    # tuple are not None
+                                    self.add_violation(
+                                        node,
+                                        error_code=self.ERRORS[0].error_code,
+                                        message=self.ERRORS[0].message(),
+                                        replacement=None,
+                                    )
