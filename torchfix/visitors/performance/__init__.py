@@ -59,7 +59,7 @@ class TorchGradNotSetToNonePatternVisitor(TorchVisitor):
 
             # hasattr check to handle mypy error
             if set_to_none_arg and hasattr(set_to_none_arg.value, "value"):
-                if set_to_none_arg.value == "False":
+                if set_to_none_arg.value.value == "False":
                     self.add_violation(
                         node,
                         error_code=self.ERRORS[0].error_code,
