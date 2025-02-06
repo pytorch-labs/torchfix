@@ -22,6 +22,7 @@ from .visitors import (
     TorchVisionDeprecatedToTensorVisitor,
     TorchVisionSingletonImportVisitor,
     TorchGradNotSetToNonePatternVisitor,
+    TorchOptimizerSingleTensorPatternVisitor,
 )
 
 __version__ = "0.7.0"
@@ -45,6 +46,7 @@ ALL_VISITOR_CLS = [
     TorchVisionDeprecatedToTensorVisitor,
     TorchVisionSingletonImportVisitor,
     TorchGradNotSetToNonePatternVisitor,
+    TorchOptimizerSingleTensorPatternVisitor,
 ]
 
 

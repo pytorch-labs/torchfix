@@ -65,3 +65,41 @@ class TorchGradNotSetToNonePatternVisitor(TorchVisitor):
                         error_code=self.ERRORS[0].error_code,
                         message=self.ERRORS[0].message(),
                     )
+
+
+class TorchOptimizerSingleTensorPatternVisitor(TorchVisitor):
+    """
+    Reimplementation of OptimizerSingleTensorPattern from
+    https://github.com/pytorch/pytorch/blob/main/torch/profiler/_pattern_matcher.py
+    """
+
+    ERRORS = [
+        TorchError(
+            "TOR403",
+            (
+                "Deteced optimizer running with single tensor implementation. "
+                "Please enable multi tensor implementation by passing 'foreach=True' "
+                "into optimizer."
+            ),
+        )
+    ]
+
+    optimizers_with_foreach = ["Adam", "SGD", "AdamW"]
+
+    def visit_Call(self, node):
+
+        qualified_name = self.get_qualified_name_for_call(node)
+
+        for optimizer in self.optimizers_with_foreach:
+
+            if qualified_name and qualified_name.endswith(f"{optimizer}"):
+
+                foreach_arg = self.get_specific_arg(node, arg_name="foreach", arg_pos=1)
+
+                if foreach_arg is None:
+
+                    self.add_violation(
+                        node,
+                        error_code=self.ERRORS[0].error_code,
+                        message=self.ERRORS[0].message(),
+                    )

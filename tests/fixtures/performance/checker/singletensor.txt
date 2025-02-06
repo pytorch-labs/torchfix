@@ -1,0 +1,3 @@
+9:18 TOR403 Deteced optimizer running with single tensor implementation. Please enable multi tensor implementation by passing 'foreach=True' into optimizer.
+10:17 TOR403 Deteced optimizer running with single tensor implementation. Please enable multi tensor implementation by passing 'foreach=True' into optimizer.
+11:19 TOR403 Deteced optimizer running with single tensor implementation. Please enable multi tensor implementation by passing 'foreach=True' into optimizer.
