@@ -8,7 +8,10 @@ from .misc import (
     TorchRequireGradVisitor,
 )
 from .nonpublic import TorchNonPublicAliasVisitor
-from .performance import TorchSynchronizedDataLoaderVisitor
+from .performance import (
+    TorchSynchronizedDataLoaderVisitor,
+    TorchGradNotSetToNonePatternVisitor,
+)
 from .security import TorchUnsafeLoadVisitor
 from .vision import (
     TorchVisionDeprecatedPretrainedVisitor,
@@ -30,4 +33,5 @@ __all__ = [
     "TorchVisionDeprecatedPretrainedVisitor",
     "TorchVisionDeprecatedToTensorVisitor",
     "TorchVisionSingletonImportVisitor",
+    "TorchGradNotSetToNonePatternVisitor",
 ]
