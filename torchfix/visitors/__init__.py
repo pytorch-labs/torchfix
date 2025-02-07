@@ -11,6 +11,7 @@ from .nonpublic import TorchNonPublicAliasVisitor
 from .performance import (
     TorchSynchronizedDataLoaderVisitor,
     TorchGradNotSetToNonePatternVisitor,
+    TorchOptimizerSingleTensorPatternVisitor,
 )
 from .security import TorchUnsafeLoadVisitor
 from .vision import (
@@ -34,4 +35,5 @@ __all__ = [
     "TorchVisionDeprecatedToTensorVisitor",
     "TorchVisionSingletonImportVisitor",
     "TorchGradNotSetToNonePatternVisitor",
+    "TorchOptimizerSingleTensorPatternVisitor",
 ]
