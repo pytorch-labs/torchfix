@@ -152,7 +152,7 @@ Migration guide:
 This function is deprecated. Use the `torch.nn.attention.sdpa_kernel` context manager instead.
 
 Migration guide:
-Each boolean input parameter (defaulting to true unless specified) of `sdp_kernel` corresponds to a `SDPBackened`. If the input parameter is true, the corresponding backend should be added to the input list of `sdpa_kernel`.
+Each boolean input parameter (defaulting to true unless specified) of `sdp_kernel` corresponds to a `SDPBackend`. If the input parameter is true, the corresponding backend should be added to the input list of `sdpa_kernel`.
 
 #### torch.chain_matmul
 
